@@ -282,6 +282,87 @@
       background: #333;
     }
 
+    [hidden] { display: none !important; }
+
+    .action-group { display: flex; gap: 10px; flex-wrap: wrap; }
+    .action-bar { flex-wrap: wrap; }
+
+    .yt-btn {
+      background-color: #ff0033;
+      color: #fff;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 50px;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 14px;
+      transition: all 0.2s ease;
+    }
+
+    .yt-btn:hover {
+      background-color: #ff3355;
+      transform: scale(1.04);
+      box-shadow: 0 4px 15px rgba(255, 0, 51, 0.4);
+    }
+
+    .yt-form {
+      background: #181818;
+      border: 1px solid #282828;
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 16px;
+    }
+
+    .yt-form textarea {
+      width: 100%;
+      background: #242424;
+      border: 1px solid #333;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 14px;
+      padding: 10px 12px;
+      resize: vertical;
+      outline: none;
+    }
+
+    .yt-form textarea:focus { border-color: #ff0033; }
+
+    .yt-form-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+
+    .yt-msg { flex: 1 1 100%; font-size: 12px; color: #b3b3b3; min-height: 1em; }
+    .yt-msg.error { color: #ff5555; }
+    .yt-form-actions .yt-btn { padding: 10px 18px; font-size: 13px; }
+
+    .yt-wrap { position: absolute; inset: 0; z-index: 3; background: #000; }
+    .yt-wrap iframe, .yt-wrap > div { width: 100%; height: 100%; border: 0; display: block; }
+
+    .yt-badge {
+      display: inline-block;
+      background: #ff0033;
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-right: 6px;
+      vertical-align: middle;
+    }
+
+    .player-status {
+      font-size: 12px;
+      color: #ff5555;
+      text-align: center;
+      margin-bottom: 10px;
+      min-height: 0;
+    }
+
     .shortcut-info {
       margin-top: 16px;
       padding-top: 12px;
@@ -303,6 +384,7 @@
       </div>
       <div class="audio-title" id="audioTitle">Judul Media</div>
     </div>
+    <div class="yt-wrap" id="ytWrap" hidden><div id="ytPlayer"></div></div>
   </div>
   
   <div class="playlist-section">
@@ -321,12 +403,26 @@
       </select>
     </div>
 
+    <div class="player-status" id="playerStatus" hidden></div>
+
     <div class="action-bar">
-      <label class="file-input-btn">
-        + Tambah Berkas
-        <input type="file" id="filePicker" accept="audio/*, video/*, .mp3, .mp4, .m4a, .wav, .ogg, .flac" multiple>
-      </label>
+      <div class="action-group">
+        <label class="file-input-btn">
+          + Tambah Berkas
+          <input type="file" id="filePicker" accept="audio/*, video/*, .mp3, .mp4, .m4a, .wav, .ogg, .flac" multiple>
+        </label>
+        <button class="yt-btn" id="ytToggleBtn" type="button">▶ Tambah dari YouTube</button>
+      </div>
       <button class="clear-btn" id="clearBtn">Kosongkan Daftar</button>
+    </div>
+
+    <div class="yt-form" id="ytForm" hidden>
+      <textarea id="ytInput" rows="2" placeholder="Tempel link YouTube di sini (boleh beberapa, satu link per baris)&#10;contoh: https://www.youtube.com/watch?v=xxxxxxxxxxx atau https://youtu.be/xxxxxxxxxxx"></textarea>
+      <div class="yt-form-actions">
+        <span class="yt-msg" id="ytMsg"></span>
+        <button class="clear-btn" id="ytCancelBtn" type="button">Batal</button>
+        <button class="yt-btn" id="ytAddBtn" type="button">+ Tambah ke Daftar</button>
+      </div>
     </div>
 
     <div class="search-container">
@@ -362,7 +458,22 @@
   const repeatBtn = document.getElementById('repeatBtn');
   const speedSelect = document.getElementById('speedSelect');
   const searchInput = document.getElementById('searchInput');
-  
+  const ytWrap = document.getElementById('ytWrap');
+  const ytToggleBtn = document.getElementById('ytToggleBtn');
+  const ytForm = document.getElementById('ytForm');
+  const ytInput = document.getElementById('ytInput');
+  const ytMsg = document.getElementById('ytMsg');
+  const ytAddBtn = document.getElementById('ytAddBtn');
+  const ytCancelBtn = document.getElementById('ytCancelBtn');
+  const playerStatus = document.getElementById('playerStatus');
+
+  let ytApiPromise = null;
+  let ytPlayerPromise = null;
+  let ytPlayer = null;
+  let playToken = 0;
+  let ytErrorStreak = 0;
+  let statusTimer = null;
+
   let trackList = [];
   let currentIndex = -1;
   let currentObjectUrl = null;
@@ -396,6 +507,24 @@
       const trackData = { name: file.name, type: file.type, blob: file };
       const req = store.add(trackData);
       req.onsuccess = (e) => resolve({ id: e.target.result, name: file.name, type: file.type, blob: file });
+      req.onerror = (e) => reject(e.target.error);
+    });
+  }
+
+  function saveRecordToDB(record) {
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction('playlist', 'readwrite');
+      const req = tx.objectStore('playlist').add(record);
+      req.onsuccess = (e) => resolve({ ...record, id: e.target.result });
+      req.onerror = (e) => reject(e.target.error);
+    });
+  }
+
+  function updateRecordInDB(record) {
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction('playlist', 'readwrite');
+      const req = tx.objectStore('playlist').put(record);
+      req.onsuccess = () => resolve();
       req.onerror = (e) => reject(e.target.error);
     });
   }
@@ -444,8 +573,244 @@
   searchInput.addEventListener('input', renderPlaylist);
 
   speedSelect.addEventListener('change', () => {
-    mediaPlayer.playbackRate = parseFloat(speedSelect.value);
+    const rate = parseFloat(speedSelect.value);
+    mediaPlayer.playbackRate = rate;
+    if (isYTActive()) ytPlayer.setPlaybackRate(rate);
   });
+
+  /* ================= YouTube ================= */
+
+  function isYT(item) {
+    return item && item.type === 'youtube';
+  }
+
+  function isYTActive() {
+    return !!ytPlayer && currentIndex >= 0 && isYT(trackList[currentIndex]);
+  }
+
+  function showStatus(text, ms = 4000, ok = false) {
+    clearTimeout(statusTimer);
+    playerStatus.textContent = text;
+    playerStatus.style.color = ok ? '#1db954' : '';
+    playerStatus.hidden = false;
+    statusTimer = setTimeout(() => { playerStatus.hidden = true; }, ms);
+  }
+
+  function parseYouTubeId(raw) {
+    const text = raw.trim();
+    if (!text) return null;
+    if (/^[\w-]{11}$/.test(text)) return text;
+    let u;
+    try {
+      u = new URL(/^https?:\/\//i.test(text) ? text : 'https://' + text);
+    } catch (e) {
+      return null;
+    }
+    const host = u.hostname.toLowerCase();
+    let id = null;
+    if (host === 'youtu.be') {
+      id = u.pathname.slice(1).split('/')[0];
+    } else if (host === 'youtube.com' || host.endsWith('.youtube.com') || host.endsWith('youtube-nocookie.com')) {
+      id = u.searchParams.get('v');
+      if (!id) {
+        const m = u.pathname.match(/^\/(?:shorts|embed|live|v)\/([\w-]{11})/);
+        id = m ? m[1] : null;
+      }
+    }
+    return id && /^[\w-]{11}$/.test(id) ? id : null;
+  }
+
+  async function fetchYouTubeTitle(videoId) {
+    try {
+      const url = 'https://www.youtube.com/oembed?format=json&url=' +
+        encodeURIComponent('https://www.youtube.com/watch?v=' + videoId);
+      const res = await fetch(url);
+      if (!res.ok) return null;
+      const data = await res.json();
+      return data && data.title ? data.title : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function loadYTApi() {
+    if (ytApiPromise) return ytApiPromise;
+    ytApiPromise = new Promise((resolve, reject) => {
+      if (window.YT && window.YT.Player) return resolve();
+      const prev = window.onYouTubeIframeAPIReady;
+      window.onYouTubeIframeAPIReady = () => {
+        if (typeof prev === 'function') prev();
+        resolve();
+      };
+      const s = document.createElement('script');
+      s.src = 'https://www.youtube.com/iframe_api';
+      s.onerror = () => {
+        ytApiPromise = null;
+        reject(new Error('Gagal memuat YouTube API'));
+      };
+      document.head.appendChild(s);
+    });
+    return ytApiPromise;
+  }
+
+  function getYTPlayer() {
+    if (ytPlayerPromise) return ytPlayerPromise;
+    ytPlayerPromise = loadYTApi().then(() => new Promise((resolve) => {
+      const player = new YT.Player('ytPlayer', {
+        width: '100%',
+        height: '100%',
+        playerVars: { playsinline: 1, rel: 0, autoplay: 1 },
+        events: {
+          onReady: () => { ytPlayer = player; resolve(player); },
+          onStateChange: onYTStateChange,
+          onError: onYTError
+        }
+      });
+    })).catch((err) => {
+      ytPlayerPromise = null;
+      throw err;
+    });
+    return ytPlayerPromise;
+  }
+
+  function onYTStateChange(e) {
+    if (!isYTActive()) return;
+    if (e.data === YT.PlayerState.PLAYING) {
+      ytErrorStreak = 0;
+      const item = trackList[currentIndex];
+      const data = ytPlayer.getVideoData ? ytPlayer.getVideoData() : null;
+      if (item.autoTitle && data && data.title) {
+        item.name = data.title;
+        item.autoTitle = false;
+        updateRecordInDB({ id: item.id, name: item.name, type: item.type, videoId: item.videoId, autoTitle: false }).catch(() => {});
+        renderPlaylist();
+      }
+    } else if (e.data === YT.PlayerState.ENDED) {
+      handleEnded();
+    }
+  }
+
+  function onYTError(e) {
+    if (!isYTActive()) return;
+    const reasons = {
+      2: 'link/ID video tidak valid',
+      5: 'video tidak bisa diputar di player HTML5',
+      100: 'video tidak ditemukan atau sudah dihapus/privat',
+      101: 'pemilik video tidak mengizinkan diputar di situs lain',
+      150: 'pemilik video tidak mengizinkan diputar di situs lain'
+    };
+    const item = trackList[currentIndex];
+    ytErrorStreak++;
+    showStatus(`⚠️ "${item.name}" gagal diputar: ${reasons[e.data] || 'kesalahan ' + e.data}.`, 6000);
+    if (ytErrorStreak >= trackList.length) return; // semua gagal, jangan loop terus
+    const token = playToken;
+    setTimeout(() => {
+      if (token !== playToken) return;
+      const idx = getNextIndex(true);
+      if (idx !== -1 && idx !== currentIndex) playTrack(idx);
+    }, 1500);
+  }
+
+  function stopYT() {
+    if (ytPlayer && ytPlayer.stopVideo) {
+      try { ytPlayer.stopVideo(); } catch (e) {}
+    }
+    ytWrap.hidden = true;
+  }
+
+  function openYTForm() {
+    ytForm.hidden = false;
+    ytMsg.textContent = '';
+    ytMsg.classList.remove('error');
+    ytInput.focus();
+  }
+
+  function closeYTForm() {
+    ytForm.hidden = true;
+    ytInput.value = '';
+    ytMsg.textContent = '';
+  }
+
+  ytToggleBtn.addEventListener('click', () => {
+    if (ytForm.hidden) openYTForm(); else closeYTForm();
+  });
+  ytCancelBtn.addEventListener('click', closeYTForm);
+
+  ytInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      addYouTubeLinks();
+    } else if (e.key === 'Escape') {
+      closeYTForm();
+    }
+  });
+
+  ytAddBtn.addEventListener('click', addYouTubeLinks);
+
+  async function addYouTubeLinks() {
+    const lines = ytInput.value.split(/[\n\s,]+/).filter(Boolean);
+    if (lines.length === 0) {
+      ytMsg.textContent = 'Tempel minimal satu link YouTube dulu.';
+      ytMsg.classList.add('error');
+      return;
+    }
+
+    const ids = [];
+    const invalid = [];
+    for (const line of lines) {
+      const id = parseYouTubeId(line);
+      if (id) { if (!ids.includes(id)) ids.push(id); }
+      else invalid.push(line);
+    }
+
+    if (ids.length === 0) {
+      ytMsg.textContent = 'Link tidak dikenali. Gunakan link video YouTube (youtube.com/watch?v=..., youtu.be/..., atau /shorts/...).';
+      ytMsg.classList.add('error');
+      return;
+    }
+
+    ytAddBtn.disabled = true;
+    ytMsg.classList.remove('error');
+    ytMsg.textContent = 'Menambahkan...';
+
+    const isFirstTime = trackList.length === 0;
+    let added = 0;
+
+    for (const videoId of ids) {
+      const title = await fetchYouTubeTitle(videoId);
+      const record = {
+        name: title || `YouTube: ${videoId}`,
+        type: 'youtube',
+        videoId,
+        autoTitle: !title
+      };
+      try {
+        const saved = await saveRecordToDB(record);
+        trackList.push(saved);
+        added++;
+      } catch (err) {
+        console.error('Gagal menyimpan link YouTube:', err);
+      }
+    }
+
+    ytAddBtn.disabled = false;
+    renderPlaylist();
+
+    if (invalid.length) {
+      ytInput.value = invalid.join('\n');
+      ytMsg.textContent = `${added} link ditambahkan. ${invalid.length} link tidak dikenali (masih di kotak).`;
+      ytMsg.classList.add('error');
+    } else {
+      closeYTForm();
+      showStatus(`✅ ${added} link YouTube ditambahkan ke daftar.`, 3000, true);
+    }
+
+    if (isFirstTime && trackList.length > 0) {
+      playTrack(0);
+    }
+  }
+
+  /* =========================================== */
 
   shuffleBtn.addEventListener('click', () => {
     isShuffle = !isShuffle;
@@ -518,7 +883,15 @@
 
       const titleSpan = document.createElement('span');
       titleSpan.className = 'track-title';
-      titleSpan.textContent = `${entry.originalIndex + 1}. ${entry.item.name}`;
+      titleSpan.textContent = `${entry.originalIndex + 1}. `;
+      if (isYT(entry.item)) {
+        const badge = document.createElement('span');
+        badge.className = 'yt-badge';
+        badge.textContent = 'YT';
+        titleSpan.appendChild(badge);
+      }
+      titleSpan.appendChild(document.createTextNode(entry.item.name));
+      titleSpan.title = entry.item.name;
       titleSpan.onclick = () => playTrack(entry.originalIndex);
 
       const removeBtn = document.createElement('button');
@@ -541,6 +914,32 @@
     
     currentIndex = index;
     const item = trackList[currentIndex];
+    const token = ++playToken;
+
+    if (isYT(item)) {
+      mediaPlayer.pause();
+      mediaPlayer.removeAttribute('src');
+      mediaPlayer.load();
+      if (currentObjectUrl) {
+        URL.revokeObjectURL(currentObjectUrl);
+        currentObjectUrl = null;
+      }
+      audioOverlay.style.display = 'none';
+      ytWrap.hidden = false;
+      renderPlaylist();
+
+      getYTPlayer().then((player) => {
+        if (token !== playToken) return;
+        player.loadVideoById(item.videoId);
+        player.setPlaybackRate(parseFloat(speedSelect.value));
+      }).catch(() => {
+        if (token !== playToken) return;
+        showStatus('⚠️ Tidak bisa memuat YouTube. Periksa koneksi internet.', 6000);
+      });
+      return;
+    }
+
+    stopYT();
 
     const isAudio = (item.type && item.type.startsWith('audio')) || item.name.match(/\.(mp3|wav|ogg|m4a|aac|flac|wma)$/i);
     if (isAudio) {
@@ -631,14 +1030,7 @@
     trackList.splice(index, 1);
     
     if (trackList.length === 0) {
-      currentIndex = -1;
-      if (currentObjectUrl) {
-        URL.revokeObjectURL(currentObjectUrl);
-        currentObjectUrl = null;
-      }
-      mediaPlayer.removeAttribute('src');
-      mediaPlayer.load();
-      audioOverlay.style.display = 'none';
+      resetPlayer();
       renderPlaylist();
       return;
     }
@@ -657,8 +1049,15 @@
   clearBtn.addEventListener('click', async () => {
     await clearDB();
     trackList = [];
-    currentIndex = -1;
     searchInput.value = '';
+    resetPlayer();
+    renderPlaylist();
+  });
+
+  function resetPlayer() {
+    currentIndex = -1;
+    playToken++;
+    stopYT();
     if (currentObjectUrl) {
       URL.revokeObjectURL(currentObjectUrl);
       currentObjectUrl = null;
@@ -666,10 +1065,11 @@
     mediaPlayer.removeAttribute('src');
     mediaPlayer.load();
     audioOverlay.style.display = 'none';
-    renderPlaylist();
-  });
+  }
 
-  mediaPlayer.addEventListener('ended', () => {
+  mediaPlayer.addEventListener('ended', handleEnded);
+
+  function handleEnded() {
     const mode = repeatModes[repeatIndex];
     if (mode === 'one') {
       playTrack(currentIndex);
@@ -679,18 +1079,47 @@
     if (nextIndex !== -1) {
       playTrack(nextIndex);
     }
-  });
+  }
+
+  function togglePlay() {
+    if (isYTActive()) {
+      const st = ytPlayer.getPlayerState();
+      if (st === YT.PlayerState.PLAYING || st === YT.PlayerState.BUFFERING) ytPlayer.pauseVideo();
+      else ytPlayer.playVideo();
+      return;
+    }
+    if (mediaPlayer.paused) mediaPlayer.play();
+    else mediaPlayer.pause();
+  }
+
+  function seekBy(seconds) {
+    if (isYTActive()) {
+      const dur = ytPlayer.getDuration() || 0;
+      const t = Math.max(0, Math.min(dur, ytPlayer.getCurrentTime() + seconds));
+      ytPlayer.seekTo(t, true);
+      return;
+    }
+    mediaPlayer.currentTime = Math.max(0, Math.min(mediaPlayer.duration || 0, mediaPlayer.currentTime + seconds));
+  }
+
+  function changeVolume(delta) {
+    if (isYTActive()) {
+      ytPlayer.setVolume(Math.max(0, Math.min(100, ytPlayer.getVolume() + delta * 100)));
+      return;
+    }
+    mediaPlayer.volume = Math.max(0, Math.min(1, mediaPlayer.volume + delta));
+  }
 
   document.addEventListener('keydown', (e) => {
-    if (document.activeElement === searchInput || document.activeElement.tagName === 'INPUT') {
+    const tag = document.activeElement && document.activeElement.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') {
       return;
     }
 
     switch(e.code) {
       case 'Space':
         e.preventDefault();
-        if (mediaPlayer.paused) mediaPlayer.play();
-        else mediaPlayer.pause();
+        togglePlay();
         break;
       case 'ArrowRight':
         e.preventDefault();
@@ -698,7 +1127,7 @@
           const nextIdx = getNextIndex(true);
           if (nextIdx !== -1) playTrack(nextIdx);
         } else {
-          mediaPlayer.currentTime = Math.min(mediaPlayer.duration || 0, mediaPlayer.currentTime + 5);
+          seekBy(5);
         }
         break;
       case 'ArrowLeft':
@@ -707,16 +1136,16 @@
           const prevIdx = getPrevIndex();
           if (prevIdx !== -1) playTrack(prevIdx);
         } else {
-          mediaPlayer.currentTime = Math.max(0, mediaPlayer.currentTime - 5);
+          seekBy(-5);
         }
         break;
       case 'ArrowUp':
         e.preventDefault();
-        mediaPlayer.volume = Math.min(1, mediaPlayer.volume + 0.1);
+        changeVolume(0.1);
         break;
       case 'ArrowDown':
         e.preventDefault();
-        mediaPlayer.volume = Math.max(0, mediaPlayer.volume - 0.1);
+        changeVolume(-0.1);
         break;
     }
   });
