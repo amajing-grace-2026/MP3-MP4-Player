@@ -13,11 +13,27 @@
       background: #000;
       color: #b3b3b3;
       display: flex;
+      flex-direction: column;
       justify-content: center;
       align-items: center;
       min-height: 100vh;
       padding: 20px;
     }
+
+    .foot {
+      width: 100%;
+      max-width: 750px;
+      margin-top: 20px;
+      padding: 18px 16px 22px;
+      text-align: center;
+      font-size: 13px;
+      color: #9aa3b2;
+      border-top: 1px solid #2a3039;
+    }
+    .foot .logo-inline { height: 17px; width: auto; vertical-align: -3px; margin-left: 6px; }
+    .foot .dot { margin: 0 8px; }
+    .foot a { color: #5AA9FF; text-decoration: none; font-weight: 600; white-space: nowrap; }
+    .foot a:hover { text-decoration: underline; }
 
     .player-card {
       background-color: #121212;
@@ -444,6 +460,12 @@
     </div>
   </div>
 </div>
+
+<footer class="foot">
+  Dibuat oleh<img class="logo-inline" src="brand/logo-kecil-gelap.svg" alt="Amajing Labs">
+  <span class="dot">·</span>
+  <a href="https://forms.gle/fZAtNMCwKqhQhgpKA" target="_blank" rel="noopener">💬 Kirim masukan</a>
+</footer>
 
 <script>
   const filePicker = document.getElementById('filePicker');

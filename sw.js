@@ -1,9 +1,10 @@
-const CACHE_NAME = 'media-player-v3';
+const CACHE_NAME = 'media-player-v4';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './manifest.json',
-  './icon.png'
+  './icon.png',
+  './brand/logo-kecil-gelap.svg'
 ];
 
 self.addEventListener('install', (e) => {
