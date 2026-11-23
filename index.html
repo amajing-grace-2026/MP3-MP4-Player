@@ -1095,6 +1095,28 @@
     'https://fi1.api.radio-browser.info',
     'https://de2.api.radio-browser.info'
   ];
+  // Stasiun bawaan: selalu tampil paling atas (link https sudah dicek).
+  const FEATURED_RADIOS = [
+    {
+      name: 'Suara Surabaya 100 FM',
+      url_resolved: 'https://c5.siar.us/proxy/ssfm/stream',
+      _meta: '⭐ Surabaya • Berita & info lalu lintas Surabaya–Malang',
+      _keywords: 'suara surabaya ss ssfm 100 berita lalu lintas jawa timur'
+    },
+    {
+      name: 'City Guide 911 FM Malang',
+      url_resolved: 'https://cityguide911fm.com/radio/audio.mp3',
+      _meta: '⭐ Malang • Info kota & lalu lintas Malang',
+      _keywords: 'city guide cityguide 911 91.1 malang lalu lintas jawa timur'
+    }
+  ];
+
+  function featuredFor(q) {
+    const query = q.toLowerCase();
+    return FEATURED_RADIOS.filter((s) => !query ||
+      (s.name + ' ' + s._keywords).toLowerCase().includes(query));
+  }
+
   let radioSearchToken = 0;
   let radioDebounce = null;
 
@@ -1139,6 +1161,8 @@
         list = await rbFetch('/json/stations/search?' + base);
       }
       if (token !== radioSearchToken) return;
+      const featured = (!radioCountry.value || radioCountry.value === 'ID') ? featuredFor(q) : [];
+      list = featured.concat(list);
       const seen = new Set();
       list = list.filter((s) => {
         const url = (s.url_resolved || s.url || '').trim();
@@ -1150,8 +1174,9 @@
       setRadioMsg(list.length ? (q ? `${list.length} stasiun ditemukan.` : 'Stasiun populer:') : 'Tidak ada stasiun yang cocok. Coba kata lain atau pilih "Semua negara".', !list.length);
     } catch (e) {
       if (token !== radioSearchToken) return;
-      radioResults.innerHTML = '';
-      setRadioMsg('Gagal memuat daftar radio. Periksa koneksi internet lalu coba lagi.', true);
+      const featured = featuredFor(q);
+      renderRadioResults(featured);
+      setRadioMsg('Gagal memuat daftar radio lengkap. Periksa koneksi internet lalu coba lagi.', true);
     }
   }
 
@@ -1167,7 +1192,7 @@
       name.textContent = s.name.trim();
       const meta = document.createElement('div');
       meta.className = 'radio-meta';
-      meta.textContent = [
+      meta.textContent = s._meta || [
         s.state || s.country,
         s.codec ? s.codec + (s.bitrate ? ' ' + s.bitrate + ' kbps' : '') : '',
         (s.tags || '').split(',').slice(0, 3).join(', ')
