@@ -1,9 +1,14 @@
-const CACHE_NAME = 'media-player-v6';
+const CACHE_NAME = 'media-player-v7';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './manifest.json',
-  './icon.png',
+  './brand/ikon.svg',
+  './brand/ikon-192.png',
+  './brand/ikon-512.png',
+  './brand/ikon-maskable-192.png',
+  './brand/ikon-maskable-512.png',
+  './brand/apple-touch-icon.png',
   './brand/logo-kecil-gelap.svg'
 ];
 
