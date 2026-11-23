@@ -30,6 +30,21 @@
       color: #9aa3b2;
       border-top: 1px solid #2a3039;
     }
+    .ad-slot {
+      width: 100%;
+      max-width: 750px;
+      margin-top: 20px;
+    }
+    .ad-slot .ad-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #6a6a6a;
+      text-align: center;
+      margin-bottom: 6px;
+    }
+    /* Label "Sponsor" hanya muncul kalau iklannya benar-benar tampil */
+    .ad-slot:not(:has(#container-65734f289dddd359d3f6eeb86bb26aea > *)) .ad-label { display: none; }
     .foot .logo-inline { height: 17px; width: auto; vertical-align: -3px; margin-left: 6px; }
     .foot .dot { margin: 0 8px; }
     .foot a { color: #5AA9FF; text-decoration: none; font-weight: 600; white-space: nowrap; }
@@ -444,8 +459,6 @@
     <div class="search-container">
       <input type="text" id="searchInput" class="search-input" placeholder="Cari judul lagu atau video...">
     </div>
-<script async="async" data-cfasync="false" src="https://bauval.org/21/65734f289dddd359d3f6eeb86bb26aea"></script>
-<div id="container-65734f289dddd359d3f6eeb86bb26aea"></div>
     <div class="playlist-header">
       <span># Judul Lagu / Video</span>
       <span>Opsi</span>
@@ -460,6 +473,11 @@
     </div>
   </div>
 </div>
+
+<aside class="ad-slot" aria-label="Iklan">
+  <div class="ad-label">Sponsor</div>
+  <div id="container-65734f289dddd359d3f6eeb86bb26aea"></div>
+</aside>
 
 <footer class="foot">
   Dibuat oleh<img class="logo-inline" src="brand/logo-kecil-gelap.svg" alt="Amajing Labs">
@@ -1180,6 +1198,25 @@
     });
   }
 </script>
-<script data-cfasync="false" src="https://bauval.org/14/853caaf607ef4ebf01b344e52059d2bf"></script>
+<script>
+  // Iklan dimuat setelah aplikasi siap, supaya tidak memperlambat/mengganggu saat dibuka.
+  (function () {
+    function addAdScript(src) {
+      const s = document.createElement('script');
+      s.async = true;
+      s.setAttribute('data-cfasync', 'false');
+      s.src = src;
+      document.body.appendChild(s);
+    }
+    window.addEventListener('load', function () {
+      // Native banner: tampil di slot "Sponsor" di bawah player.
+      addAdScript('https://bauval.org/21/65734f289dddd359d3f6eeb86bb26aea');
+      // Social bar (melayang): ditunda 15 detik agar pengguna bisa mulai memakai aplikasi dulu.
+      setTimeout(function () {
+        addAdScript('https://bauval.org/14/853caaf607ef4ebf01b344e52059d2bf');
+      }, 15000);
+    });
+  })();
+</script>
 </body>
 </html>
