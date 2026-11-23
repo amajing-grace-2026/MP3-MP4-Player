@@ -1,6 +1,6 @@
 {
-  "name": "Pemutar Media MP3 & MP4",
-  "short_name": "Pemutar Media",
+  "name": "Amajing Player",
+  "short_name": "Amajing Player",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#121212",

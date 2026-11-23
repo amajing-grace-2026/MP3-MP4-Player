@@ -1,4 +1,4 @@
-const CACHE_NAME = 'media-player-v8';
+const CACHE_NAME = 'media-player-v9';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -37,6 +37,8 @@ self.addEventListener('activate', (e) => {
 });
 
 self.addEventListener('fetch', (e) => {
+  // Stream radio, Google Drive, YouTube, iklan, dll. langsung ke internet tanpa lewat cache.
+  if (new URL(e.request.url).origin !== self.location.origin) return;
   e.respondWith(
     caches.match(e.request).then((response) => {
       return response || fetch(e.request);

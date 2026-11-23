@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Spotify Style Media Player</title>
+  <title>Amajing Player</title>
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="brand/ikon.svg" type="image/svg+xml">
   <link rel="icon" href="brand/ikon-192.png" type="image/png" sizes="192x192">
   <link rel="apple-touch-icon" href="brand/apple-touch-icon.png">
-  <meta name="apple-mobile-web-app-title" content="Pemutar Media">
+  <meta name="apple-mobile-web-app-title" content="Amajing Player">
   <meta name="theme-color" content="#1db954">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Circular', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; }
@@ -320,6 +320,52 @@
     [hidden] { display: none !important; }
 
     .action-group { display: flex; gap: 10px; flex-wrap: wrap; }
+
+    .radio-btn {
+      background-color: #7c4dff;
+      color: #fff;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 50px;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 14px;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+    .radio-btn:hover { background-color: #9670ff; transform: scale(1.04); box-shadow: 0 4px 15px rgba(124, 77, 255, 0.4); }
+
+    .form-hint { font-size: 12px; color: #9a9a9a; margin-top: 8px; line-height: 1.5; }
+    .form-hint b { color: #d0d0d0; }
+
+    .radio-search { display: flex; gap: 8px; flex-wrap: wrap; }
+    .radio-search .search-input { flex: 1 1 220px; }
+    .radio-panel .yt-msg { margin: 8px 2px 0; }
+    .radio-results { list-style: none; max-height: 260px; overflow-y: auto; margin-top: 8px; }
+    .radio-results li {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 10px; border-radius: 8px;
+    }
+    .radio-results li:hover { background: #222; }
+    .radio-info { flex: 1; min-width: 0; }
+    .radio-name { color: #fff; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .radio-meta { color: #8a8a8a; font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .radio-add {
+      background: transparent; color: #b9a3ff; border: 1px solid #7c4dff;
+      border-radius: 50px; padding: 6px 12px; font-size: 12px; font-weight: 700; cursor: pointer; flex: none;
+    }
+    .radio-add:hover { background: #7c4dff; color: #fff; }
+    .radio-add.added { border-color: #1db954; color: #1db954; background: transparent; cursor: default; }
+    .radio-manual { margin-top: 10px; font-size: 13px; }
+    .radio-manual summary { cursor: pointer; color: #b3b3b3; }
+    .radio-manual-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+    .plain-input {
+      flex: 1 1 180px; background: #242424; border: 1px solid #333; border-radius: 8px;
+      color: #fff; font-size: 13px; padding: 9px 12px; outline: none;
+    }
+    .plain-input:focus { border-color: #7c4dff; }
+    .radio-manual-row .radio-btn { padding: 9px 16px; font-size: 13px; }
+    .radio-credit { flex: 1; font-size: 11px; color: #6a6a6a; }
     .action-bar { flex-wrap: wrap; }
 
     .yt-btn {
@@ -491,7 +537,7 @@
     <video id="mediaPlayer" playsinline></video>
     <div class="audio-overlay" id="audioOverlay" style="display: none;">
       <div class="album-art">
-        <span>🎵</span>
+        <span id="albumIcon">🎵</span>
       </div>
       <div class="audio-title" id="audioTitle">Judul Media</div>
     </div>
@@ -548,17 +594,43 @@
           + Tambah Berkas
           <input type="file" id="filePicker" accept="audio/*, video/*, .mp3, .mp4, .m4a, .wav, .ogg, .flac" multiple>
         </label>
-        <button class="yt-btn" id="ytToggleBtn" type="button">▶ Tambah dari YouTube</button>
+        <button class="yt-btn" id="ytToggleBtn" type="button">▶ YouTube / Drive</button>
+        <button class="radio-btn" id="radioToggleBtn" type="button">📻 Radio</button>
       </div>
       <button class="clear-btn" id="clearBtn">Kosongkan Daftar</button>
     </div>
 
     <div class="yt-form" id="ytForm" hidden>
-      <textarea id="ytInput" rows="2" placeholder="Tempel link YouTube di sini (boleh beberapa, satu link per baris)&#10;contoh: https://www.youtube.com/watch?v=xxxxxxxxxxx atau https://youtu.be/xxxxxxxxxxx"></textarea>
+      <textarea id="ytInput" rows="3" placeholder="Tempel link YouTube atau Google Drive (satu link per baris).&#10;Judul boleh ditulis setelah link, contoh:&#10;https://drive.google.com/file/d/xxxx/view Lagu Kenangan"></textarea>
+      <div class="form-hint">Google Drive: file harus dibagikan ke <b>"Siapa saja yang memiliki link"</b>. File di atas ±100 MB tidak bisa diputar langsung.</div>
       <div class="yt-form-actions">
         <span class="yt-msg" id="ytMsg"></span>
         <button class="clear-btn" id="ytCancelBtn" type="button">Batal</button>
         <button class="yt-btn" id="ytAddBtn" type="button">+ Tambah ke Daftar</button>
+      </div>
+    </div>
+
+    <div class="yt-form radio-panel" id="radioPanel" hidden>
+      <div class="radio-search">
+        <input type="text" id="radioQuery" class="search-input" placeholder="Cari stasiun radio, contoh: Prambors, jazz, dangdut" autocomplete="off">
+        <select class="nav-btn" id="radioCountry" title="Negara">
+          <option value="ID" selected>🇮🇩 Indonesia</option>
+          <option value="">🌐 Semua negara</option>
+        </select>
+      </div>
+      <div class="yt-msg" id="radioMsg"></div>
+      <ul class="radio-results" id="radioResults"></ul>
+      <details class="radio-manual">
+        <summary>Punya link stream radio sendiri?</summary>
+        <div class="radio-manual-row">
+          <input type="text" id="radioUrl" class="plain-input" placeholder="https://... (link stream, harus https)">
+          <input type="text" id="radioName" class="plain-input" placeholder="Nama stasiun">
+          <button class="radio-btn" id="radioAddManualBtn" type="button">+ Tambah</button>
+        </div>
+      </details>
+      <div class="yt-form-actions">
+        <span class="radio-credit">Data stasiun dari radio-browser.info</span>
+        <button class="clear-btn" id="radioCloseBtn" type="button">Tutup</button>
       </div>
     </div>
 
@@ -597,6 +669,7 @@
   const mediaPlayer = document.getElementById('mediaPlayer');
   const audioOverlay = document.getElementById('audioOverlay');
   const audioTitle = document.getElementById('audioTitle');
+  const albumIcon = document.getElementById('albumIcon');
   const clearBtn = document.getElementById('clearBtn');
   const prevBtn = document.getElementById('prevBtn');
   const nextBtn = document.getElementById('nextBtn');
@@ -893,24 +966,62 @@
 
   ytAddBtn.addEventListener('click', addYouTubeLinks);
 
+  function parseDriveId(raw) {
+    let u;
+    try {
+      const text = raw.trim();
+      u = new URL(/^https?:\/\//i.test(text) ? text : 'https://' + text);
+    } catch (e) {
+      return null;
+    }
+    const host = u.hostname.toLowerCase();
+    if (!/(^|\.)(drive|docs|drive\.usercontent)\.google\.com$/.test(host)) return null;
+    const m = u.pathname.match(/\/(?:file\/)?d\/([\w-]{20,})/);
+    const id = m ? m[1] : u.searchParams.get('id');
+    return id && /^[\w-]{20,}$/.test(id) ? id : null;
+  }
+
+  function driveUrl(id, alt) {
+    return alt
+      ? `https://drive.usercontent.google.com/download?id=${encodeURIComponent(id)}&export=download`
+      : `https://drive.google.com/uc?export=download&id=${encodeURIComponent(id)}`;
+  }
+
+  // Satu baris boleh berisi beberapa link; kata-kata setelah link dipakai sebagai judul.
+  function parseLinkInput(text) {
+    const entries = [];
+    const invalid = [];
+    for (const line of text.split('\n')) {
+      let current = null;
+      const stray = [];
+      for (const tok of line.split(/[\s,]+/).filter(Boolean)) {
+        const yt = parseYouTubeId(tok);
+        const gd = yt ? null : parseDriveId(tok);
+        if (yt || gd) {
+          current = yt ? { kind: 'youtube', id: yt, title: [] } : { kind: 'gdrive', id: gd, title: [] };
+          entries.push(current);
+        } else if (current) {
+          current.title.push(tok);
+        } else {
+          stray.push(tok);
+        }
+      }
+      if (stray.length) invalid.push(stray.join(' '));
+    }
+    return { entries, invalid };
+  }
+
   async function addYouTubeLinks() {
-    const lines = ytInput.value.split(/[\n\s,]+/).filter(Boolean);
-    if (lines.length === 0) {
-      ytMsg.textContent = 'Tempel minimal satu link YouTube dulu.';
+    if (!ytInput.value.trim()) {
+      ytMsg.textContent = 'Tempel minimal satu link YouTube atau Google Drive dulu.';
       ytMsg.classList.add('error');
       return;
     }
 
-    const ids = [];
-    const invalid = [];
-    for (const line of lines) {
-      const id = parseYouTubeId(line);
-      if (id) { if (!ids.includes(id)) ids.push(id); }
-      else invalid.push(line);
-    }
+    const { entries, invalid } = parseLinkInput(ytInput.value);
 
-    if (ids.length === 0) {
-      ytMsg.textContent = 'Link tidak dikenali. Gunakan link video YouTube (youtube.com/watch?v=..., youtu.be/..., atau /shorts/...).';
+    if (entries.length === 0) {
+      ytMsg.textContent = 'Link tidak dikenali. Gunakan link video YouTube atau link file Google Drive (drive.google.com/file/d/...).';
       ytMsg.classList.add('error');
       return;
     }
@@ -922,20 +1033,30 @@
     const isFirstTime = trackList.length === 0;
     let added = 0;
 
-    for (const videoId of ids) {
-      const title = await fetchYouTubeTitle(videoId);
-      const record = {
-        name: title || `YouTube: ${videoId}`,
-        type: 'youtube',
-        videoId,
-        autoTitle: !title
-      };
+    for (const entry of entries) {
+      const customTitle = entry.title.join(' ').trim();
+      let record;
+      if (entry.kind === 'youtube') {
+        const title = customTitle || await fetchYouTubeTitle(entry.id);
+        record = {
+          name: title || `YouTube: ${entry.id}`,
+          type: 'youtube',
+          videoId: entry.id,
+          autoTitle: !title
+        };
+      } else {
+        record = {
+          name: customTitle || `Google Drive: ${entry.id.slice(0, 8)}…`,
+          type: 'gdrive',
+          fileId: entry.id
+        };
+      }
       try {
         const saved = await saveRecordToDB(record);
         trackList.push(saved);
         added++;
       } catch (err) {
-        console.error('Gagal menyimpan link YouTube:', err);
+        console.error('Gagal menyimpan link:', err);
       }
     }
 
@@ -948,13 +1069,168 @@
       ytMsg.classList.add('error');
     } else {
       closeYTForm();
-      showStatus(`✅ ${added} link YouTube ditambahkan ke daftar.`, 3000, true);
+      showStatus(`✅ ${added} link ditambahkan ke daftar.`, 3000, true);
     }
 
     if (isFirstTime && trackList.length > 0) {
       playTrack(0);
     }
   }
+
+  /* ================= Radio ================= */
+
+  const radioToggleBtn = document.getElementById('radioToggleBtn');
+  const radioPanel = document.getElementById('radioPanel');
+  const radioQuery = document.getElementById('radioQuery');
+  const radioCountry = document.getElementById('radioCountry');
+  const radioResults = document.getElementById('radioResults');
+  const radioMsg = document.getElementById('radioMsg');
+  const radioUrl = document.getElementById('radioUrl');
+  const radioName = document.getElementById('radioName');
+  const radioAddManualBtn = document.getElementById('radioAddManualBtn');
+  const radioCloseBtn = document.getElementById('radioCloseBtn');
+
+  const RB_HOSTS = [
+    'https://de1.api.radio-browser.info',
+    'https://fi1.api.radio-browser.info',
+    'https://de2.api.radio-browser.info'
+  ];
+  let radioSearchToken = 0;
+  let radioDebounce = null;
+
+  function setRadioMsg(text, isError) {
+    radioMsg.textContent = text;
+    radioMsg.classList.toggle('error', !!isError);
+  }
+
+  async function rbFetch(path) {
+    let lastErr;
+    for (const host of RB_HOSTS) {
+      try {
+        const res = await fetch(host + path);
+        if (res.ok) return await res.json();
+        lastErr = new Error('HTTP ' + res.status);
+      } catch (e) {
+        lastErr = e;
+      }
+    }
+    throw lastErr;
+  }
+
+  async function searchRadio() {
+    const token = ++radioSearchToken;
+    const q = radioQuery.value.trim();
+    const base = new URLSearchParams({
+      hidebroken: 'true', is_https: 'true', order: 'clickcount', reverse: 'true', limit: '40'
+    });
+    if (radioCountry.value) base.set('countrycode', radioCountry.value);
+
+    setRadioMsg('Mencari stasiun...');
+    try {
+      let list;
+      if (q) {
+        const byName = new URLSearchParams(base); byName.set('name', q);
+        list = await rbFetch('/json/stations/search?' + byName);
+        if (list.length === 0) {
+          const byTag = new URLSearchParams(base); byTag.set('tag', q.toLowerCase());
+          list = await rbFetch('/json/stations/search?' + byTag);
+        }
+      } else {
+        list = await rbFetch('/json/stations/search?' + base);
+      }
+      if (token !== radioSearchToken) return;
+      const seen = new Set();
+      list = list.filter((s) => {
+        const url = (s.url_resolved || s.url || '').trim();
+        if (!/^https:\/\//i.test(url) || seen.has(url)) return false;
+        seen.add(url);
+        return true;
+      });
+      renderRadioResults(list);
+      setRadioMsg(list.length ? (q ? `${list.length} stasiun ditemukan.` : 'Stasiun populer:') : 'Tidak ada stasiun yang cocok. Coba kata lain atau pilih "Semua negara".', !list.length);
+    } catch (e) {
+      if (token !== radioSearchToken) return;
+      radioResults.innerHTML = '';
+      setRadioMsg('Gagal memuat daftar radio. Periksa koneksi internet lalu coba lagi.', true);
+    }
+  }
+
+  function renderRadioResults(list) {
+    radioResults.innerHTML = '';
+    for (const s of list) {
+      const url = (s.url_resolved || s.url).trim();
+      const li = document.createElement('li');
+      const info = document.createElement('div');
+      info.className = 'radio-info';
+      const name = document.createElement('div');
+      name.className = 'radio-name';
+      name.textContent = s.name.trim();
+      const meta = document.createElement('div');
+      meta.className = 'radio-meta';
+      meta.textContent = [
+        s.state || s.country,
+        s.codec ? s.codec + (s.bitrate ? ' ' + s.bitrate + ' kbps' : '') : '',
+        (s.tags || '').split(',').slice(0, 3).join(', ')
+      ].filter(Boolean).join(' • ');
+      info.append(name, meta);
+
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'radio-add';
+      const already = trackList.some((t) => t.type === 'radio' && t.url === url);
+      btn.textContent = already ? '✓ Di daftar' : '▶ Putar';
+      if (already) btn.classList.add('added');
+      btn.onclick = () => addRadio(s.name.trim(), url, btn);
+
+      li.append(info, btn);
+      radioResults.appendChild(li);
+    }
+  }
+
+  async function addRadio(name, url, btn) {
+    const existing = trackList.findIndex((t) => t.type === 'radio' && t.url === url);
+    if (existing !== -1) { playTrack(existing); return; }
+    try {
+      const saved = await saveRecordToDB({ name, type: 'radio', url });
+      trackList.push(saved);
+      if (btn) { btn.textContent = '✓ Di daftar'; btn.classList.add('added'); }
+      playTrack(trackList.length - 1);
+      showStatus(`📻 ${name} ditambahkan ke daftar.`, 3000, true);
+    } catch (e) {
+      setRadioMsg('Gagal menyimpan stasiun.', true);
+    }
+  }
+
+  radioToggleBtn.addEventListener('click', () => {
+    radioPanel.hidden = !radioPanel.hidden;
+    if (!radioPanel.hidden) {
+      radioQuery.focus();
+      if (!radioResults.children.length) searchRadio();
+    }
+  });
+  radioCloseBtn.addEventListener('click', () => { radioPanel.hidden = true; });
+  radioQuery.addEventListener('input', () => {
+    clearTimeout(radioDebounce);
+    radioDebounce = setTimeout(searchRadio, 450);
+  });
+  radioQuery.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { clearTimeout(radioDebounce); searchRadio(); }
+    if (e.key === 'Escape') radioPanel.hidden = true;
+  });
+  radioCountry.addEventListener('change', searchRadio);
+  radioAddManualBtn.addEventListener('click', () => {
+    const url = radioUrl.value.trim();
+    if (!/^https:\/\/\S+$/i.test(url)) {
+      setRadioMsg('Link stream harus diawali https:// (link http tidak bisa diputar di situs https).', true);
+      return;
+    }
+    const name = radioName.value.trim() || 'Radio';
+    radioUrl.value = '';
+    radioName.value = '';
+    addRadio(name, url, null);
+  });
+
+  /* ========================================= */
 
   /* =========================================== */
 
@@ -1030,10 +1306,12 @@
       const titleSpan = document.createElement('span');
       titleSpan.className = 'track-title';
       titleSpan.textContent = `${entry.originalIndex + 1}. `;
-      if (isYT(entry.item)) {
+      const badgeInfo = SOURCE_BADGES[entry.item.type];
+      if (badgeInfo) {
         const badge = document.createElement('span');
         badge.className = 'yt-badge';
-        badge.textContent = 'YT';
+        badge.textContent = badgeInfo[0];
+        badge.style.background = badgeInfo[1];
         titleSpan.appendChild(badge);
       }
       titleSpan.appendChild(document.createTextNode(entry.item.name));
@@ -1054,6 +1332,57 @@
       playlistUI.appendChild(li);
     });
   }
+
+  const SOURCE_BADGES = {
+    youtube: ['YT', '#ff0033'],
+    radio: ['RADIO', '#7c4dff'],
+    gdrive: ['DRIVE', '#1a73e8']
+  };
+
+  let driveTriedAlt = false;
+
+  function playRemote(item) {
+    if (currentObjectUrl) {
+      URL.revokeObjectURL(currentObjectUrl);
+      currentObjectUrl = null;
+    }
+    albumIcon.textContent = item.type === 'radio' ? '📻' : '🎵';
+    audioTitle.textContent = item.name;
+    audioOverlay.style.display = 'flex';
+    driveTriedAlt = false;
+    mediaPlayer.src = item.type === 'radio' ? item.url : driveUrl(item.fileId);
+    mediaPlayer.load();
+    mediaPlayer.playbackRate = item.type === 'radio' ? 1 : parseFloat(speedSelect.value);
+    const p = mediaPlayer.play();
+    if (p !== undefined) p.catch(() => {});
+    renderPlaylist();
+  }
+
+  // File Drive bisa berupa video: sembunyikan sampul musik kalau ternyata ada gambar.
+  mediaPlayer.addEventListener('loadedmetadata', () => {
+    const item = trackList[currentIndex];
+    if (item && item.type === 'gdrive' && mediaPlayer.videoWidth > 0) {
+      audioOverlay.style.display = 'none';
+    }
+  });
+
+  mediaPlayer.addEventListener('error', () => {
+    const item = trackList[currentIndex];
+    if (!item || !mediaPlayer.getAttribute('src')) return;
+    if (item.type === 'gdrive') {
+      if (!driveTriedAlt) {
+        driveTriedAlt = true;
+        mediaPlayer.src = driveUrl(item.fileId, true);
+        mediaPlayer.load();
+        const p = mediaPlayer.play();
+        if (p !== undefined) p.catch(() => {});
+        return;
+      }
+      showStatus(`⚠️ "${item.name}" tidak bisa diputar. Pastikan file Drive dibagikan ke "Siapa saja yang memiliki link" dan ukurannya di bawah ±100 MB.`, 9000);
+    } else if (item.type === 'radio') {
+      showStatus(`⚠️ Radio "${item.name}" tidak bisa diputar sekarang (mungkin sedang offline). Coba stasiun lain.`, 7000);
+    }
+  });
 
   function playTrack(index) {
     if (index < 0 || index >= trackList.length) return;
@@ -1087,6 +1416,12 @@
 
     stopYT();
 
+    if (item.type === 'radio' || item.type === 'gdrive') {
+      playRemote(item);
+      return;
+    }
+
+    albumIcon.textContent = '🎵';
     const isAudio = (item.type && item.type.startsWith('audio')) || item.name.match(/\.(mp3|wav|ogg|m4a|aac|flac|wma)$/i);
     if (isAudio) {
       audioTitle.textContent = item.name;
@@ -1356,7 +1691,9 @@
       seekBar.value = cur;
       curTime.textContent = fmtTime(cur);
     }
-    durTime.textContent = fmtTime(dur);
+    const live = currentIndex >= 0 && trackList[currentIndex] && trackList[currentIndex].type === 'radio';
+    durTime.textContent = live ? 'LIVE' : fmtTime(dur);
+    if (live) seekBar.disabled = true;
     setRangeFill(seekBar);
     const playing = isPlayingNow();
     playPauseBtn.classList.toggle('playing', playing);
