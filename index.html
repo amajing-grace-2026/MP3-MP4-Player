@@ -402,13 +402,89 @@
       color: #6a6a6a;
       text-align: center;
     }
+    /* ===== Bar kontrol (selalu terlihat) ===== */
+    .control-bar {
+      background: #181818;
+      border-bottom: 1px solid #282828;
+      padding: 12px 20px 14px;
+    }
+    .seek-row, .ctrl-row { display: flex; align-items: center; gap: 12px; }
+    .ctrl-row { margin-top: 8px; }
+    .time { font-size: 12px; color: #e0e0e0; font-variant-numeric: tabular-nums; min-width: 38px; text-align: center; }
+
+    .range {
+      -webkit-appearance: none;
+      appearance: none;
+      height: 6px;
+      border-radius: 6px;
+      cursor: pointer;
+      outline: none;
+      --pct: 0%;
+      background: linear-gradient(to right, #1db954 0 var(--pct), #4d4d4d var(--pct) 100%);
+    }
+    .range.seek { flex: 1; }
+    .range::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px; height: 16px; border-radius: 50%;
+      background: #fff; border: none;
+      box-shadow: 0 0 0 3px rgba(29, 185, 84, 0.35);
+    }
+    .range::-moz-range-thumb {
+      width: 16px; height: 16px; border-radius: 50%;
+      background: #fff; border: none;
+      box-shadow: 0 0 0 3px rgba(29, 185, 84, 0.35);
+    }
+    .range:focus-visible { box-shadow: 0 0 0 2px #1db954; }
+    .range:disabled { cursor: default; opacity: 0.5; }
+
+    .ctrl-btn {
+      background: transparent;
+      border: none;
+      color: #fff;
+      width: 38px; height: 38px;
+      border-radius: 50%;
+      display: inline-flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      transition: background 0.2s ease, transform 0.15s ease;
+      flex: none;
+    }
+    .ctrl-btn:hover { background: #2a2a2a; }
+    .ctrl-btn svg { width: 24px; height: 24px; fill: currentColor; }
+
+    .play-btn { background: #fff; color: #000; width: 46px; height: 46px; }
+    .play-btn:hover { background: #fff; transform: scale(1.06); }
+    .play-btn svg { width: 26px; height: 26px; }
+    .play-btn .ic-pause, .play-btn.playing .ic-play { display: none; }
+    .play-btn.playing .ic-pause { display: block; }
+
+    #muteBtn .ic-mute, #muteBtn.muted .ic-vol { display: none; }
+    #muteBtn.muted .ic-mute { display: block; }
+    #muteBtn.muted { color: #ff5555; }
+
+    .volume-group { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+    .range.volume { width: 140px; }
+    .vol-label { font-size: 12px; color: #e0e0e0; min-width: 36px; font-variant-numeric: tabular-nums; }
+
+    @media (max-width: 480px) {
+      .control-bar { padding: 10px 14px 12px; }
+      .range.volume { width: 90px; }
+    }
+
+    /* Layar penuh: video + bar kontrol ikut */
+    .stage:fullscreen { display: flex; flex-direction: column; background: #000; }
+    .stage:fullscreen .media-container { flex: 1; aspect-ratio: auto; }
+    .stage:fullscreen video { max-height: none; }
+    .stage:-webkit-full-screen { display: flex; flex-direction: column; background: #000; width: 100%; height: 100%; }
+    .stage:-webkit-full-screen .media-container { flex: 1; aspect-ratio: auto; }
+    .stage:-webkit-full-screen video { max-height: none; }
   </style>
 </head>
 <body>
 
 <div class="player-card">
+ <div class="stage" id="stage">
   <div class="media-container">
-    <video id="mediaPlayer" controls></video>
+    <video id="mediaPlayer" playsinline></video>
     <div class="audio-overlay" id="audioOverlay" style="display: none;">
       <div class="album-art">
         <span>🎵</span>
@@ -417,7 +493,33 @@
     </div>
     <div class="yt-wrap" id="ytWrap" hidden><div id="ytPlayer"></div></div>
   </div>
-  
+
+  <div class="control-bar">
+    <div class="seek-row">
+      <span class="time" id="curTime">0:00</span>
+      <input type="range" class="range seek" id="seekBar" min="0" max="0" step="0.1" value="0" aria-label="Posisi putar">
+      <span class="time" id="durTime">0:00</span>
+    </div>
+    <div class="ctrl-row">
+      <button class="ctrl-btn play-btn" id="playPauseBtn" type="button" title="Play / Pause (Spasi)" aria-label="Play">
+        <svg viewBox="0 0 24 24" class="ic-play"><path d="M8 5v14l11-7z"/></svg>
+        <svg viewBox="0 0 24 24" class="ic-pause"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>
+      </button>
+      <div class="volume-group">
+        <button class="ctrl-btn" id="muteBtn" type="button" title="Bisukan / Suarakan (M)" aria-label="Bisukan">
+          <svg viewBox="0 0 24 24" class="ic-vol"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0 0 14 8v8a4.5 4.5 0 0 0 2.5-4zM14 3.2v2.1a7 7 0 0 1 0 13.4v2.1a9 9 0 0 0 0-17.6z"/></svg>
+          <svg viewBox="0 0 24 24" class="ic-mute"><path d="M16.5 12A4.5 4.5 0 0 0 14 8v2.2l2.5 2.5V12zM19 12a7 7 0 0 1-.6 2.8l1.5 1.5A9 9 0 0 0 14 3.2v2.1A7 7 0 0 1 19 12zM4.3 3 3 4.3 7.7 9H3v6h4l5 5v-6.7l4.3 4.3a7 7 0 0 1-2.3 1.2v2.1a9 9 0 0 0 3.7-1.8l2 2 1.3-1.3L4.3 3zM12 4 9.9 6.1 12 8.2V4z"/></svg>
+        </button>
+        <input type="range" class="range volume" id="volumeBar" min="0" max="100" step="1" value="100" aria-label="Volume">
+        <span class="vol-label" id="volLabel">100%</span>
+      </div>
+      <button class="ctrl-btn" id="fullscreenBtn" type="button" title="Layar penuh" aria-label="Layar penuh">
+        <svg viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
+      </button>
+    </div>
+  </div>
+ </div>
+
   <div class="playlist-section">
     <div class="nav-controls">
       <button class="nav-btn" id="shuffleBtn">🔀 Shuffle: OFF</button>
@@ -469,7 +571,7 @@
     </ul>
 
     <div class="shortcut-info">
-      💾 <strong>Penyimpanan Otomatis Aktif</strong> | ⌨️ Spasi (Play/Pause) | ⬅/➔ (±5s) | Shift+⬅/➔ (Prev/Next) | ⬆/⬇ (Vol)
+      💾 <strong>Penyimpanan Otomatis Aktif</strong> | ⌨️ Spasi (Play/Pause) | ⬅/➔ (±5s) | Shift+⬅/➔ (Prev/Next) | ⬆/⬇ (Vol) | M (Mute)
     </div>
   </div>
 </div>
@@ -701,7 +803,7 @@
         height: '100%',
         playerVars: { playsinline: 1, rel: 0, autoplay: 1 },
         events: {
-          onReady: () => { ytPlayer = player; resolve(player); },
+          onReady: () => { ytPlayer = player; applyVolume(); resolve(player); },
           onStateChange: onYTStateChange,
           onError: onYTError
         }
@@ -1142,22 +1244,173 @@
     mediaPlayer.currentTime = Math.max(0, Math.min(mediaPlayer.duration || 0, mediaPlayer.currentTime + seconds));
   }
 
-  function changeVolume(delta) {
-    if (isYTActive()) {
-      ytPlayer.setVolume(Math.max(0, Math.min(100, ytPlayer.getVolume() + delta * 100)));
-      return;
+  /* ================= Bar kontrol & volume ================= */
+
+  const stage = document.getElementById('stage');
+  const playPauseBtn = document.getElementById('playPauseBtn');
+  const seekBar = document.getElementById('seekBar');
+  const curTime = document.getElementById('curTime');
+  const durTime = document.getElementById('durTime');
+  const muteBtn = document.getElementById('muteBtn');
+  const volumeBar = document.getElementById('volumeBar');
+  const volLabel = document.getElementById('volLabel');
+  const fullscreenBtn = document.getElementById('fullscreenBtn');
+
+  let volume = 100;      // 0-100
+  let isMuted = false;
+  let isSeeking = false;
+
+  try {
+    const saved = JSON.parse(localStorage.getItem('playerVolume') || 'null');
+    if (saved && typeof saved.volume === 'number') {
+      volume = Math.max(0, Math.min(100, saved.volume));
+      isMuted = !!saved.muted;
     }
-    mediaPlayer.volume = Math.max(0, Math.min(1, mediaPlayer.volume + delta));
+  } catch (e) {}
+
+  function fmtTime(sec) {
+    if (!isFinite(sec) || sec < 0) sec = 0;
+    sec = Math.floor(sec);
+    const h = Math.floor(sec / 3600);
+    const m = Math.floor((sec % 3600) / 60);
+    const s = String(sec % 60).padStart(2, '0');
+    return h ? `${h}:${String(m).padStart(2, '0')}:${s}` : `${m}:${s}`;
   }
 
+  function setRangeFill(el) {
+    const max = parseFloat(el.max) || 0;
+    const pct = max > 0 ? (parseFloat(el.value) / max) * 100 : 0;
+    el.style.setProperty('--pct', pct + '%');
+  }
+
+  function applyVolume() {
+    mediaPlayer.volume = volume / 100;
+    mediaPlayer.muted = isMuted;
+    if (ytPlayer && ytPlayer.setVolume) {
+      try {
+        ytPlayer.setVolume(volume);
+        if (isMuted) ytPlayer.mute(); else ytPlayer.unMute();
+      } catch (e) {}
+    }
+    const shown = isMuted ? 0 : volume;
+    volumeBar.value = shown;
+    setRangeFill(volumeBar);
+    volLabel.textContent = Math.round(shown) + '%';
+    muteBtn.classList.toggle('muted', isMuted || volume === 0);
+    muteBtn.setAttribute('aria-label', isMuted ? 'Suarakan' : 'Bisukan');
+    try { localStorage.setItem('playerVolume', JSON.stringify({ volume, muted: isMuted })); } catch (e) {}
+  }
+
+  function setVolume(v) {
+    volume = Math.max(0, Math.min(100, Math.round(v)));
+    isMuted = false;
+    applyVolume();
+  }
+
+  function changeVolume(delta) {
+    setVolume((isMuted ? 0 : volume) + delta * 100);
+  }
+
+  function toggleMute() {
+    if (isMuted || volume === 0) {
+      isMuted = false;
+      if (volume === 0) volume = 50;
+    } else {
+      isMuted = true;
+    }
+    applyVolume();
+  }
+
+  volumeBar.addEventListener('input', () => setVolume(parseFloat(volumeBar.value)));
+  muteBtn.addEventListener('click', toggleMute);
+  playPauseBtn.addEventListener('click', () => {
+    if (currentIndex === -1 && trackList.length > 0) { playTrack(0); return; }
+    togglePlay();
+  });
+  mediaPlayer.addEventListener('click', togglePlay);
+
+  function getTimes() {
+    if (isYTActive() && ytPlayer.getCurrentTime) {
+      return { cur: ytPlayer.getCurrentTime() || 0, dur: ytPlayer.getDuration() || 0 };
+    }
+    return { cur: mediaPlayer.currentTime || 0, dur: isFinite(mediaPlayer.duration) ? mediaPlayer.duration : 0 };
+  }
+
+  function isPlayingNow() {
+    if (isYTActive() && ytPlayer.getPlayerState) {
+      const st = ytPlayer.getPlayerState();
+      return st === YT.PlayerState.PLAYING || st === YT.PlayerState.BUFFERING;
+    }
+    return !mediaPlayer.paused && !mediaPlayer.ended;
+  }
+
+  function updateControls() {
+    const { cur, dur } = getTimes();
+    seekBar.max = dur || 0;
+    seekBar.disabled = !dur;
+    if (!isSeeking) {
+      seekBar.value = cur;
+      curTime.textContent = fmtTime(cur);
+    }
+    durTime.textContent = fmtTime(dur);
+    setRangeFill(seekBar);
+    const playing = isPlayingNow();
+    playPauseBtn.classList.toggle('playing', playing);
+    playPauseBtn.setAttribute('aria-label', playing ? 'Pause' : 'Play');
+  }
+
+  seekBar.addEventListener('input', () => {
+    isSeeking = true;
+    curTime.textContent = fmtTime(parseFloat(seekBar.value));
+    setRangeFill(seekBar);
+  });
+  seekBar.addEventListener('change', () => {
+    const t = parseFloat(seekBar.value);
+    if (isYTActive()) ytPlayer.seekTo(t, true);
+    else mediaPlayer.currentTime = t;
+    isSeeking = false;
+  });
+
+  ['play', 'pause', 'timeupdate', 'loadedmetadata', 'durationchange', 'emptied', 'ended'].forEach((ev) => {
+    mediaPlayer.addEventListener(ev, updateControls);
+  });
+  setInterval(updateControls, 300);
+
+  function toggleFullscreen() {
+    const fsEl = document.fullscreenElement || document.webkitFullscreenElement;
+    if (fsEl) {
+      (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+    } else {
+      const req = stage.requestFullscreen || stage.webkitRequestFullscreen;
+      if (req) req.call(stage);
+      else if (mediaPlayer.webkitEnterFullscreen) mediaPlayer.webkitEnterFullscreen(); // iPhone
+    }
+  }
+  fullscreenBtn.addEventListener('click', toggleFullscreen);
+  // Klik mouse tidak memindahkan fokus ke tombol, supaya shortcut Spasi tetap untuk Play/Pause
+  document.querySelectorAll('.ctrl-btn').forEach((b) => b.addEventListener('mousedown', (e) => e.preventDefault()));
+  mediaPlayer.addEventListener('dblclick', toggleFullscreen);
+
+  applyVolume();
+  updateControls();
+
+  /* ======================================================= */
+
   document.addEventListener('keydown', (e) => {
-    const tag = document.activeElement && document.activeElement.tagName;
-    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') {
+    const el = document.activeElement;
+    const tag = el && el.tagName;
+    const isRange = tag === 'INPUT' && el.type === 'range';
+    if ((tag === 'INPUT' && !isRange) || tag === 'TEXTAREA' || tag === 'SELECT') {
       return;
     }
 
     switch(e.code) {
+      case 'KeyM':
+        e.preventDefault();
+        toggleMute();
+        break;
       case 'Space':
+        if (tag === 'BUTTON') return; // biarkan tombol yang sedang fokus bekerja normal
         e.preventDefault();
         togglePlay();
         break;
