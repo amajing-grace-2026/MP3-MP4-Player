@@ -1,7 +1,10 @@
 {
+  "id": "./?app=amajing-player",
   "name": "Amajing Player",
   "short_name": "Amajing Player",
+  "description": "Pemutar MP3, MP4, YouTube, Google Drive, dan radio dari Amajing Labs.",
   "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#121212",
   "theme_color": "#1db954",
