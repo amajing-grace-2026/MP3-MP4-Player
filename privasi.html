@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kebijakan Privasi – Amajing Player</title>
+  <link rel="icon" href="brand/ikon.svg" type="image/svg+xml">
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; background: #000; color: #c9ced6;
+      font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.65; padding: 24px 16px 40px;
+    }
+    main { max-width: 760px; margin: 0 auto; background: #121212; border-radius: 16px; padding: 28px 24px; }
+    h1 { color: #fff; font-size: 26px; margin: 0 0 4px; }
+    h2 { color: #fff; font-size: 18px; margin: 28px 0 8px; }
+    .muted { color: #8a93a3; font-size: 14px; }
+    a { color: #5AA9FF; }
+    ul { padding-left: 20px; }
+    li { margin-bottom: 6px; }
+    .box { background: #10291a; border: 1px solid #1db954; border-radius: 10px; padding: 12px 14px; }
+    .back { display: inline-block; margin-bottom: 18px; color: #1db954; text-decoration: none; font-weight: 600; }
+    footer { max-width: 760px; margin: 20px auto 0; text-align: center; color: #9aa3b2; font-size: 13px; }
+  </style>
+</head>
+<body>
+<main>
+  <a class="back" href="./">← Kembali ke Amajing Player</a>
+  <h1>Kebijakan Privasi</h1>
+  <p class="muted">Amajing Player oleh Amajing Labs · Berlaku sejak 25 November 2026</p>
+
+  <p>Amajing Player adalah aplikasi web untuk memutar file musik/video, YouTube, Google Drive, dan radio. Halaman ini menjelaskan data apa yang dipakai aplikasi dan bagaimana caranya. Singkatnya: <b>kami tidak punya server untuk menyimpan data kamu</b>. Semua berjalan di browser perangkatmu sendiri.</p>
+
+  <h2>1. Data yang disimpan di perangkatmu</h2>
+  <ul>
+    <li>File musik/video yang kamu tambahkan, daftar putar (playlist), link YouTube/Google Drive/radio, serta pengaturan seperti volume disimpan di penyimpanan browser (IndexedDB &amp; localStorage) di perangkatmu.</li>
+    <li>Data ini tidak dikirim ke Amajing Labs. Kamu bisa menghapusnya kapan saja dengan tombol "Kosongkan Daftar", menghapus playlist, atau menghapus data situs di pengaturan browser.</li>
+  </ul>
+
+  <h2>2. Berbagi playlist lewat link</h2>
+  <ul>
+    <li>Saat kamu menekan "Bagikan", isi playlist (judul lagu, ID video YouTube, ID file Google Drive, link radio) dimasukkan ke dalam link itu sendiri. Link tidak disimpan di server kami.</li>
+    <li>Siapa pun yang menerima link bisa melihat isi playlist tersebut. File lagu yang ada di HP-mu tidak ikut dibagikan.</li>
+  </ul>
+
+  <h2>3. Akses Google Drive (opsional)</h2>
+  <div class="box">
+    <p style="margin:0 0 8px">Jika kamu memakai fitur <b>"Upload ke Google Drive"</b>, aplikasi meminta izin Google dengan cakupan <code>drive.file</code>. Dengan izin ini aplikasi <b>hanya</b> bisa mengakses file dan folder yang dibuat oleh aplikasi atau yang kamu pilih sendiri lewat jendela pemilih Google. Aplikasi tidak bisa melihat file lain di Drive-mu.</p>
+    <p style="margin:0">Izin tersebut dipakai hanya untuk: (1) membuat folder atau memakai folder yang kamu pilih, (2) meng-upload lagu yang kamu pilih ke folder itu, dan (3) mengatur folder/file tersebut menjadi "Siapa saja yang memiliki link" agar playlist bisa didengar orang yang kamu kirimi link.</p>
+  </div>
+  <ul style="margin-top:12px">
+    <li>Token akses Google hanya disimpan sementara di memori browser selama aplikasi terbuka, tidak dikirim ke Amajing Labs, dan tidak disimpan permanen.</li>
+    <li>File yang di-upload tetap milikmu dan tersimpan di Google Drive-mu. Kamu bisa menghapusnya atau mengubah pengaturan berbaginya langsung di Google Drive.</li>
+    <li>Kamu bisa mencabut izin kapan saja di <a href="https://myaccount.google.com/permissions" target="_blank" rel="noopener">myaccount.google.com/permissions</a>.</li>
+    <li>Penggunaan dan pengiriman informasi yang diterima dari Google API oleh Amajing Player mengikuti <a href="https://developers.google.com/terms/api-services-user-data-policy" target="_blank" rel="noopener">Google API Services User Data Policy</a>, termasuk persyaratan Limited Use.<br>
+      <span class="muted">Amajing Player's use and transfer of information received from Google APIs adheres to the Google API Services User Data Policy, including the Limited Use requirements.</span></li>
+    <li>Pastikan kamu berhak membagikan lagu yang kamu upload dan buka untuk umum. Tanggung jawab atas isi file ada pada pemilik Drive.</li>
+  </ul>
+
+  <h2>4. Layanan pihak ketiga</h2>
+  <ul>
+    <li><b>YouTube</b>: video diputar lewat pemutar resmi YouTube, yang tunduk pada <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Kebijakan Privasi Google</a>.</li>
+    <li><b>Google Drive</b>: lagu dari link Drive diambil langsung dari server Google.</li>
+    <li><b>Radio</b>: pencarian stasiun memakai radio-browser.info, dan siaran diambil langsung dari server stasiun radio.</li>
+    <li><b>Iklan</b>: aplikasi menampilkan iklan dari jaringan iklan pihak ketiga, yang dapat memakai cookie atau data teknis perangkat sesuai kebijakan mereka sendiri.</li>
+    <li><b>Masukan &amp; dukungan</b>: tautan "Kirim masukan" membuka Google Form, dan "Traktir kopi" membuka Saweria. Data yang kamu isi di sana diatur oleh layanan tersebut.</li>
+  </ul>
+
+  <h2>5. Anak-anak</h2>
+  <p>Aplikasi ini tidak ditujukan untuk mengumpulkan data anak-anak, dan kami tidak mengumpulkan data pribadi siapa pun.</p>
+
+  <h2>6. Perubahan &amp; kontak</h2>
+  <p>Kebijakan ini bisa diperbarui sewaktu-waktu, dan tanggal berlakunya akan diubah di atas. Pertanyaan atau permintaan bisa dikirim lewat <a href="https://forms.gle/fZAtNMCwKqhQhgpKA" target="_blank" rel="noopener">formulir masukan</a>.</p>
+</main>
+<footer>© 2026 Amajing Labs</footer>
+</body>
+</html>
