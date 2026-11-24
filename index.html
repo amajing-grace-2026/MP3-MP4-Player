@@ -53,6 +53,8 @@
     .foot .dot { margin: 0 8px; }
     .foot a { color: #5AA9FF; text-decoration: none; font-weight: 600; white-space: nowrap; }
     .foot a:hover { text-decoration: underline; }
+    #supportLink { color: #FBBF24; }
+    #sleepSelect.active { background-image: none; padding-right: 16px; }
 
     .player-card {
       background-color: #121212;
@@ -584,6 +586,17 @@
         <option value="1.5">⚡ 1.5x</option>
         <option value="2">⚡ 2.0x</option>
       </select>
+
+      <select class="nav-btn" id="sleepSelect" title="Sleep timer: musik berhenti otomatis">
+        <option value="running" id="sleepRunningOpt" hidden disabled>⏾ 0:00</option>
+        <option value="off" selected>⏾ Sleep Timer</option>
+        <option value="15">⏾ 15 menit</option>
+        <option value="30">⏾ 30 menit</option>
+        <option value="45">⏾ 45 menit</option>
+        <option value="60">⏾ 1 jam</option>
+        <option value="90">⏾ 1,5 jam</option>
+        <option value="end">⏾ Setelah lagu ini</option>
+      </select>
     </div>
 
     <div class="player-status" id="playerStatus" hidden></div>
@@ -661,6 +674,10 @@
   Dibuat oleh<img class="logo-inline" src="brand/logo-kecil-gelap.svg" alt="Amajing Labs">
   <span class="dot">·</span>
   <a href="https://forms.gle/fZAtNMCwKqhQhgpKA" target="_blank" rel="noopener">💬 Kirim masukan</a>
+  <span class="support-wrap" id="supportWrap" hidden>
+    <span class="dot">·</span>
+    <a id="supportLink" href="#" target="_blank" rel="noopener">☕ Traktir kopi</a>
+  </span>
 </footer>
 
 <script>
@@ -901,6 +918,7 @@
       if (item.autoTitle && data && data.title) {
         item.name = data.title;
         item.autoTitle = false;
+        updateMediaSession();
         updateRecordInDB({ id: item.id, name: item.name, type: item.type, videoId: item.videoId, autoTitle: false }).catch(() => {});
         renderPlaylist();
       }
@@ -1415,6 +1433,7 @@
     currentIndex = index;
     const item = trackList[currentIndex];
     const token = ++playToken;
+    updateMediaSession();
 
     if (isYT(item)) {
       mediaPlayer.pause();
@@ -1562,6 +1581,7 @@
 
   function resetPlayer() {
     currentIndex = -1;
+    if ('mediaSession' in navigator) { navigator.mediaSession.metadata = null; navigator.mediaSession.playbackState = 'none'; }
     playToken++;
     stopYT();
     if (currentObjectUrl) {
@@ -1576,6 +1596,11 @@
   mediaPlayer.addEventListener('ended', handleEnded);
 
   function handleEnded() {
+    if (sleepAtEnd) {
+      cancelSleepTimer();
+      showStatus('⏾ Sleep timer: pemutaran dihentikan. Selamat istirahat!', 8000, true);
+      return;
+    }
     const mode = repeatModes[repeatIndex];
     if (mode === 'one') {
       playTrack(currentIndex);
@@ -1723,6 +1748,7 @@
     const playing = isPlayingNow();
     playPauseBtn.classList.toggle('playing', playing);
     playPauseBtn.setAttribute('aria-label', playing ? 'Pause' : 'Play');
+    syncMediaSessionState(playing, cur, dur, live);
   }
 
   seekBar.addEventListener('input', () => {
@@ -1756,6 +1782,148 @@
   // Klik mouse tidak memindahkan fokus ke tombol, supaya shortcut Spasi tetap untuk Play/Pause
   document.querySelectorAll('.ctrl-btn').forEach((b) => b.addEventListener('mousedown', (e) => e.preventDefault()));
   mediaPlayer.addEventListener('dblclick', toggleFullscreen);
+
+  /* ============ Kontrol layar kunci / notifikasi (Media Session) ============ */
+
+  const hasMediaSession = 'mediaSession' in navigator;
+  const APP_ARTWORK = [
+    { src: 'brand/ikon-192.png', sizes: '192x192', type: 'image/png' },
+    { src: 'brand/ikon-512.png', sizes: '512x512', type: 'image/png' }
+  ];
+  const SOURCE_LABEL = { youtube: 'YouTube', radio: 'Radio', gdrive: 'Google Drive' };
+  let lastPosUpdate = 0;
+
+  function updateMediaSession() {
+    if (!hasMediaSession) return;
+    const item = trackList[currentIndex];
+    if (!item) { navigator.mediaSession.metadata = null; return; }
+    let artwork = APP_ARTWORK;
+    if (isYT(item)) {
+      artwork = [{ src: `https://i.ytimg.com/vi/${item.videoId}/hqdefault.jpg`, sizes: '480x360', type: 'image/jpeg' }];
+    }
+    try {
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: item.name.replace(/\.(mp3|mp4|m4a|wav|ogg|flac|aac|webm)$/i, ''),
+        artist: SOURCE_LABEL[item.type] || 'Amajing Player',
+        album: 'Amajing Player',
+        artwork
+      });
+    } catch (e) {}
+  }
+
+  function syncMediaSessionState(playing, cur, dur, live) {
+    if (!hasMediaSession || currentIndex < 0) return;
+    navigator.mediaSession.playbackState = playing ? 'playing' : 'paused';
+    const now = Date.now();
+    if (live || !dur || !navigator.mediaSession.setPositionState || now - lastPosUpdate < 1000) return;
+    lastPosUpdate = now;
+    try {
+      const rate = isYTActive() ? (ytPlayer.getPlaybackRate ? ytPlayer.getPlaybackRate() : 1) : (mediaPlayer.playbackRate || 1);
+      navigator.mediaSession.setPositionState({ duration: dur, playbackRate: rate, position: Math.min(cur, dur) });
+    } catch (e) {}
+  }
+
+  function playIfPaused(wantPlay) {
+    if (currentIndex === -1) { if (wantPlay && trackList.length) playTrack(0); return; }
+    if (isPlayingNow() !== wantPlay) togglePlay();
+  }
+
+  if (hasMediaSession) {
+    const ms = navigator.mediaSession;
+    const handlers = {
+      play: () => playIfPaused(true),
+      pause: () => playIfPaused(false),
+      stop: () => playIfPaused(false),
+      previoustrack: () => { const i = getPrevIndex(); if (i !== -1) playTrack(i); },
+      nexttrack: () => { const i = getNextIndex(true); if (i !== -1) playTrack(i); },
+      seekbackward: (d) => seekBy(-((d && d.seekOffset) || 10)),
+      seekforward: (d) => seekBy((d && d.seekOffset) || 10),
+      seekto: (d) => {
+        if (!d || typeof d.seekTime !== 'number') return;
+        if (isYTActive()) ytPlayer.seekTo(d.seekTime, true);
+        else mediaPlayer.currentTime = d.seekTime;
+      }
+    };
+    Object.keys(handlers).forEach((name) => {
+      try { ms.setActionHandler(name, handlers[name]); } catch (e) {}
+    });
+  }
+
+  /* ======================= Sleep timer ======================= */
+
+  const sleepSelect = document.getElementById('sleepSelect');
+  const sleepRunningOpt = document.getElementById('sleepRunningOpt');
+  let sleepDeadline = 0;
+  let sleepTick = null;
+  let sleepAtEnd = false;
+
+  function pauseEverything() {
+    if (isYTActive()) { try { ytPlayer.pauseVideo(); } catch (e) {} }
+    mediaPlayer.pause();
+  }
+
+  function showSleepLabel(text) {
+    sleepRunningOpt.textContent = text;
+    sleepRunningOpt.hidden = false;
+    sleepSelect.value = 'running';
+    sleepSelect.classList.add('active');
+  }
+
+  function cancelSleepTimer() {
+    clearInterval(sleepTick);
+    sleepTick = null;
+    sleepDeadline = 0;
+    sleepAtEnd = false;
+    sleepRunningOpt.hidden = true;
+    sleepSelect.value = 'off';
+    sleepSelect.classList.remove('active');
+  }
+
+  function onSleepTick() {
+    const left = sleepDeadline - Date.now();
+    if (left <= 0) {
+      pauseEverything();
+      cancelSleepTimer();
+      showStatus('⏾ Sleep timer: pemutaran dihentikan. Selamat istirahat!', 8000, true);
+      return;
+    }
+    showSleepLabel('⏾ ' + fmtTime(left / 1000) + ' (batal?)');
+  }
+
+  sleepSelect.addEventListener('change', () => {
+    const v = sleepSelect.value;
+    clearInterval(sleepTick);
+    sleepTick = null;
+    sleepAtEnd = false;
+    if (v === 'off') { cancelSleepTimer(); showStatus('⏾ Sleep timer dimatikan.', 3000); return; }
+    if (v === 'end') {
+      const item = trackList[currentIndex];
+      if (item && item.type === 'radio') {
+        cancelSleepTimer();
+        showStatus('Radio siaran langsung tidak punya "akhir lagu". Pilih durasi menit saja.', 6000);
+        return;
+      }
+      sleepDeadline = 0;
+      sleepAtEnd = true;
+      showSleepLabel('⏾ Berhenti setelah lagu ini');
+      showStatus('⏾ Musik akan berhenti setelah lagu ini selesai.', 4000, true);
+      return;
+    }
+    const minutes = parseInt(v, 10);
+    sleepDeadline = Date.now() + minutes * 60000;
+    sleepTick = setInterval(onSleepTick, 1000);
+    onSleepTick();
+    showStatus(`⏾ Musik akan berhenti dalam ${minutes} menit.`, 4000, true);
+  });
+
+  /* ================= Tombol dukungan (Saweria) ================= */
+
+  // Isi dengan link halaman dukunganmu, contoh: 'https://saweria.co/namakamu'. Kosong = tombol disembunyikan.
+  const SUPPORT_URL = 'https://saweria.co/amajinglabs';
+  if (SUPPORT_URL) {
+    document.getElementById('supportLink').href = SUPPORT_URL;
+    document.getElementById('supportWrap').hidden = false;
+  }
 
   applyVolume();
   updateControls();
