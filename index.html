@@ -1148,10 +1148,14 @@
     return id && /^[\w-]{20,}$/.test(id) ? id : null;
   }
 
-  function driveUrl(id, alt) {
-    return alt
-      ? `https://drive.usercontent.google.com/download?id=${encodeURIComponent(id)}&export=download`
-      : `https://drive.google.com/uc?export=download&id=${encodeURIComponent(id)}`;
+  // Urutan cara memutar file Drive publik. Yang pertama (Drive API + API key situs ini) paling andal:
+  // mendukung loncat posisi (seek) dan tidak terkena halaman peringatan Google.
+  const DRIVE_URL_COUNT = 3;
+  function driveUrl(id, attempt = 0) {
+    const e = encodeURIComponent(id);
+    if (attempt === 0) return `https://www.googleapis.com/drive/v3/files/${e}?alt=media&supportsAllDrives=true&key=${GOOGLE_API_KEY}`;
+    if (attempt === 1) return `https://drive.usercontent.google.com/download?id=${e}&export=download`;
+    return `https://drive.google.com/uc?export=download&id=${e}`;
   }
 
   // Satu baris boleh berisi beberapa link; kata-kata setelah link dipakai sebagai judul.
@@ -1550,7 +1554,7 @@
     gdrive: ['DRIVE', '#1a73e8']
   };
 
-  let driveTriedAlt = false;
+  let driveAttempt = 0;
 
   function playRemote(item) {
     if (currentObjectUrl) {
@@ -1560,7 +1564,7 @@
     albumIcon.textContent = item.type === 'radio' ? '📻' : '🎵';
     audioTitle.textContent = item.name;
     audioOverlay.style.display = 'flex';
-    driveTriedAlt = false;
+    driveAttempt = 0;
     mediaPlayer.src = item.type === 'radio' ? item.url : driveUrl(item.fileId);
     mediaPlayer.load();
     mediaPlayer.playbackRate = item.type === 'radio' ? 1 : parseFloat(speedSelect.value);
@@ -1581,9 +1585,9 @@
     const item = trackList[currentIndex];
     if (!item || !mediaPlayer.getAttribute('src')) return;
     if (item.type === 'gdrive') {
-      if (!driveTriedAlt) {
-        driveTriedAlt = true;
-        mediaPlayer.src = driveUrl(item.fileId, true);
+      if (driveAttempt < DRIVE_URL_COUNT - 1) {
+        driveAttempt++;
+        mediaPlayer.src = driveUrl(item.fileId, driveAttempt);
         mediaPlayer.load();
         const p = mediaPlayer.play();
         if (p !== undefined) p.catch(() => {});
