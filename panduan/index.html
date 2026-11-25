@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Panduan pemakaian Amajing Player: memutar lagu, YouTube, Google Drive, radio, membuat dan membagikan playlist.">
+<meta name="theme-color" content="#121212">
+<link rel="icon" href="../brand/ikon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../brand/apple-touch-icon.png">
+<title>Panduan Amajing Player</title>
+<style>
+@font-face{font-family:'Jakarta';src:url('PlusJakartaSans.ttf') format('truetype');font-weight:200 800}
+@page{size:A4;margin:16mm 16mm 18mm}
+@page cover{margin:0}
+.coverpage{page:cover}
+:root{--dark:#121212;--green:#1db954;--green2:#159a45;--ink:#1d2433;--mute:#5b6577;--line:#dfe5e1;--soft:#eef8f1}
+*{box-sizing:border-box}
+html,body{margin:0;background:#fff}
+body{font-family:'Jakarta','Segoe UI',Arial,sans-serif;color:var(--ink);font-size:10.5pt;line-height:1.55;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+h1,h2,h3{color:var(--dark);line-height:1.25;margin:0}
+h2{font-size:17pt;font-weight:800;margin:0 0 4px}
+h3{font-size:11.5pt;font-weight:700;margin:14px 0 4px}
+p{margin:0 0 8px}
+b{color:var(--dark)}
+a{color:var(--green2);text-decoration:none}
+.page{page-break-after:always;break-after:page}
+.page:last-child{page-break-after:auto;break-after:auto}
+
+/* sampul */
+.cover{height:296mm;display:flex;flex-direction:column;justify-content:space-between;background:var(--dark);color:#fff;margin:0;padding:26mm 22mm 20mm;position:relative;overflow:hidden}
+.cover:before{content:"";position:absolute;right:-60mm;top:-40mm;width:170mm;height:170mm;border-radius:50%;background:radial-gradient(circle,rgba(29,185,84,.35),rgba(29,185,84,0) 70%)}
+.cover:after{content:"";position:absolute;left:-50mm;bottom:-70mm;width:150mm;height:150mm;border-radius:50%;background:radial-gradient(circle,rgba(90,169,255,.16),rgba(90,169,255,0) 70%)}
+.cover .logo{width:70mm;position:relative}
+.cover .mid{position:relative;z-index:1}
+.cover .tag{display:inline-block;font-size:9pt;letter-spacing:.18em;text-transform:uppercase;color:var(--green);font-weight:700;margin-bottom:10px}
+.cover h1{color:#fff;font-size:36pt;font-weight:800;letter-spacing:-.01em}
+.cover .lead{font-size:13pt;color:#c9ced6;max-width:135mm;margin-top:12px}
+.cover .foot{position:relative;z-index:1;font-size:9.5pt;color:#9aa3b2;border-top:1px solid rgba(255,255,255,.15);padding-top:10px;display:flex;justify-content:space-between}
+.cover .icon{width:26mm;border-radius:6mm;position:relative;margin-bottom:12mm;box-shadow:0 6px 24px rgba(0,0,0,.45)}
+
+/* isi */
+.kicker{font-size:8.5pt;letter-spacing:.16em;text-transform:uppercase;color:var(--green2);font-weight:700;margin-bottom:2px}
+.rule{height:3px;width:28mm;background:linear-gradient(90deg,var(--green2),var(--green));border-radius:2px;margin:6px 0 14px}
+.tool{border:1px solid var(--line);border-radius:10px;padding:12px 14px 10px;margin:0 0 12px;break-inside:avoid;page-break-inside:avoid}
+.tool h3{margin:0 0 2px;display:flex;align-items:center;gap:8px}
+.tool h3 .ic{display:inline-flex;width:22px;height:22px;border-radius:6px;background:var(--soft);align-items:center;justify-content:center;font-size:11pt}
+.tool .what{color:var(--mute);margin-bottom:6px}
+ol,ul{margin:0 0 6px;padding-left:18px}
+li{margin:1px 0}
+.opt{width:100%;border-collapse:collapse;margin:4px 0 6px;font-size:9.5pt}
+.opt td{padding:3px 8px;border-top:1px solid var(--line);vertical-align:top}
+.opt td:first-child{width:32mm;font-weight:700;color:var(--dark);white-space:nowrap}
+.tip{background:var(--soft);border-left:3px solid var(--green);border-radius:0 8px 8px 0;padding:6px 10px;font-size:9.5pt;margin:6px 0 2px;break-inside:avoid}
+.tip b{color:var(--green2)}
+.warn{background:#fff6e5;border-left-color:#f0a020}
+.warn b{color:#a76300}
+code,.k{font-family:Consolas,'Courier New',monospace;font-size:9pt;background:#f3f5f4;border:1px solid var(--line);border-radius:4px;padding:0 4px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.card{border:1px solid var(--line);border-radius:10px;padding:10px 12px;break-inside:avoid}
+.card h3{margin-top:0}
+.toc{columns:2;column-gap:10mm;margin-top:6px}
+.toc .g{break-inside:avoid;margin-bottom:10px}
+.toc .g b{display:block;font-size:9pt;letter-spacing:.12em;text-transform:uppercase;color:var(--green2);margin-bottom:2px}
+.toc .g span{display:block;padding:2px 0;border-bottom:1px dotted var(--line)}
+.steps{counter-reset:s;list-style:none;padding:0;margin:8px 0}
+.steps li{counter-increment:s;position:relative;padding:6px 0 6px 34px;margin:0}
+.steps li:before{content:counter(s);position:absolute;left:0;top:5px;width:24px;height:24px;border-radius:50%;background:var(--green2);color:#fff;font-weight:700;font-size:10pt;display:flex;align-items:center;justify-content:center}
+.badge{display:inline-block;font-size:8pt;font-weight:700;padding:1px 7px;border-radius:20px;background:var(--soft);color:var(--green2);border:1px solid var(--line);margin-left:4px;vertical-align:1px}
+.end{text-align:center;margin-top:16px}
+.end img{width:52mm;margin-bottom:6px}
+.end p{color:var(--mute);font-size:9.5pt}
+</style>
+<link rel="stylesheet" href="web.css">
+</head>
+<body>
+<header class="topbar"><a class="back" href="../">← <span>Kembali ke </span>aplikasi</a><span class="sp"></span><a class="dl" href="Panduan-Amajing-Player.pdf" download>⬇ Unduh PDF</a></header>
+<main>
+
+<!-- ===== SAMPUL ===== -->
+<section class="page coverpage">
+  <div class="cover">
+    <img class="logo" src="../brand/logo-gelap.svg" alt="Amajing Labs">
+    <div class="mid">
+      <img class="icon" src="../brand/ikon-512.png" alt="">
+      <div class="tag">Panduan Pemakaian</div>
+      <h1>Amajing Player</h1>
+      <p class="lead">Putar lagu dan video dari HP, YouTube, Google Drive, dan radio dalam satu aplikasi. Buat playlist, lalu bagikan ke teman cukup dengan satu link. Gratis.</p>
+    </div>
+    <div class="foot"><span>amajing-grace-2026.github.io/MP3-MP4-Player</span><span>Amajing Labs</span></div>
+  </div>
+</section>
+
+<!-- ===== MULAI ===== -->
+<section class="page">
+  <div class="kicker">Mulai di sini</div>
+  <h2>Kenalan dulu</h2>
+  <div class="rule"></div>
+  <p>Amajing Player adalah pemutar musik dan video yang berjalan langsung dari browser. Tidak perlu daftar akun. Lagu yang kamu tambahkan otomatis tersimpan, jadi daftarnya masih ada saat aplikasi dibuka lagi.</p>
+
+  <div class="tip"><b>Lagumu tetap di perangkatmu.</b> File dari HP atau laptop disimpan di penyimpanan browser milikmu sendiri, tidak dikirim ke server Amajing Labs.</div>
+
+  <h3>Cara membuka</h3>
+  <ol class="steps">
+    <li>Buka <b>Chrome</b> atau <b>Edge</b> versi terbaru, lalu kunjungi<br><a href="https://amajing-grace-2026.github.io/MP3-MP4-Player/">amajing-grace-2026.github.io/MP3-MP4-Player</a></li>
+    <li>Tambahkan lagu dengan salah satu tombol: <b>+ Tambah Berkas</b>, <b>▶ YouTube / Drive</b>, atau <b>📻 Radio</b>.</li>
+    <li><b>Ketuk judul lagu</b> di daftar untuk mulai memutar.</li>
+    <li>Supaya lebih praktis, pasang sebagai aplikasi di HP (lihat Bagian 5).</li>
+  </ol>
+
+  <h3>Isi panduan</h3>
+  <div class="toc">
+    <div class="g"><b>Bagian 1 · Menambah lagu</b><span>File dari HP / laptop</span><span>YouTube &amp; Google Drive</span><span>Radio online</span></div>
+    <div class="g"><b>Bagian 2 · Memutar</b><span>Tombol pemutar</span><span>Shuffle, Repeat, kecepatan</span><span>Sleep timer &amp; layar kunci</span></div>
+    <div class="g"><b>Bagian 3 · Playlist</b><span>Membuat &amp; mengatur playlist</span><span>Menu ⋮ setiap lagu</span></div>
+    <div class="g"><b>Bagian 4 · Berbagi</b><span>Bagikan playlist lewat link</span><span>Lagu dari HP ke Google Drive</span></div>
+    <div class="g"><b>Bagian 5 · Lainnya</b><span>Pasang aplikasi</span><span>Tanya jawab</span></div>
+  </div>
+
+  <h3>Mengenal tampilan</h3>
+  <table class="opt">
+    <tr><td>Layar pemutar</td><td>Bagian atas. Menampilkan video, atau judul lagu bila yang diputar berupa audio.</td></tr>
+    <tr><td>Bilah kontrol</td><td>Play/Pause, penggeser posisi lagu, volume, dan layar penuh.</td></tr>
+    <tr><td>Tombol navigasi</td><td>Shuffle, Prev, Next, Repeat, kecepatan putar, dan Sleep Timer.</td></tr>
+    <tr><td>Bilah playlist</td><td>Pilih playlist, buat baru, ganti nama, hapus, dan <b>🔗 Bagikan</b>.</td></tr>
+    <tr><td>Daftar lagu</td><td>Semua lagu dalam playlist aktif, lengkap dengan kotak pencarian.</td></tr>
+  </table>
+</section>
+
+<!-- ===== MENAMBAH LAGU ===== -->
+<section class="page">
+  <div class="kicker">Bagian 1</div>
+  <h2>Menambah lagu</h2>
+  <div class="rule"></div>
+
+  <div class="tool">
+    <h3><span class="ic">📁</span> File dari HP atau laptop</h3>
+    <p class="what">Memutar file musik atau video yang sudah ada di perangkatmu.</p>
+    <ol>
+      <li>Tekan <b>+ Tambah Berkas</b>.</li>
+      <li>Pilih satu atau banyak file sekaligus (MP3, MP4, M4A, WAV, OGG, FLAC).</li>
+      <li>File langsung masuk ke daftar dan tersimpan otomatis.</li>
+    </ol>
+    <div class="tip">Lagu dari HP diberi tanda <span class="badge">HP</span> di daftar. Artinya file itu hanya ada di perangkat ini. Kalau playlist ingin dibagikan ke teman, lagu bertanda HP perlu di-upload ke Google Drive dulu (lihat Bagian 4).</div>
+  </div>
+
+  <div class="tool">
+    <h3><span class="ic">▶</span> YouTube &amp; Google Drive</h3>
+    <p class="what">Menambahkan video YouTube atau file lagu yang tersimpan di Google Drive, tanpa mengunduhnya.</p>
+    <ol>
+      <li>Tekan <b>▶ YouTube / Drive</b>.</li>
+      <li>Tempel link-nya, <b>satu link per baris</b>. Judul boleh ditulis setelah link, contoh:<br><code>https://drive.google.com/file/d/xxxx/view Lagu Kenangan</code></li>
+      <li>Tekan <b>+ Tambah ke Daftar</b>.</li>
+    </ol>
+    <div class="tip"><b>Banyak lagu Drive sekaligus:</b> di Google Drive, pilih semua lagunya, tekan <b>Bagikan → Salin link</b>, lalu tempel di kotak tadi.</div>
+    <div class="tip warn"><b>Syarat file Google Drive:</b> file harus dibagikan ke <b>"Siapa saja yang memiliki link"</b>. File yang lebih besar dari sekitar 100 MB tidak bisa diputar langsung.</div>
+  </div>
+
+  <div class="tool">
+    <h3><span class="ic">📻</span> Radio online</h3>
+    <p class="what">Mendengarkan siaran radio langsung dari seluruh Indonesia dan dunia.</p>
+    <ol>
+      <li>Tekan <b>📻 Radio</b>.</li>
+      <li>Ketik nama stasiun atau jenis musik, misalnya <i>Prambors</i>, <i>jazz</i>, atau <i>dangdut</i>. Pilih <b>🇮🇩 Indonesia</b> atau <b>🌐 Semua negara</b>.</li>
+      <li>Tekan stasiun yang diinginkan untuk memasukkannya ke daftar.</li>
+    </ol>
+    <table class="opt">
+      <tr><td>Stasiun pilihan</td><td>Suara Surabaya 100 FM dan City Guide 911 FM Malang selalu tampil paling atas.</td></tr>
+      <tr><td>Link sendiri</td><td>Buka <b>Punya link stream radio sendiri?</b>, isi link stream (harus <code>https</code>) dan nama stasiun, lalu tekan <b>+ Tambah</b>.</td></tr>
+    </table>
+  </div>
+</section>
+
+<!-- ===== MEMUTAR ===== -->
+<section class="page">
+  <div class="kicker">Bagian 2</div>
+  <h2>Memutar lagu</h2>
+  <div class="rule"></div>
+
+  <div class="tool">
+    <h3><span class="ic">🎚️</span> Tombol pemutar</h3>
+    <table class="opt">
+      <tr><td>▶ / ⏸</td><td>Putar atau jeda.</td></tr>
+      <tr><td>Penggeser posisi</td><td>Geser untuk loncat ke bagian lagu tertentu.</td></tr>
+      <tr><td>🔊 Volume</td><td>Tekan ikon speaker untuk membisukan, geser untuk mengatur keras-pelan.</td></tr>
+      <tr><td>⛶ Layar penuh</td><td>Untuk menonton video dalam layar penuh.</td></tr>
+      <tr><td>⏮ Prev / Next ⏭</td><td>Lagu sebelumnya atau berikutnya.</td></tr>
+      <tr><td>🔀 Shuffle</td><td>ON = urutan lagu diacak.</td></tr>
+      <tr><td>🔁 Repeat</td><td>Tekan berulang: <b>OFF</b> → <b>ALL</b> (ulang seluruh daftar) → <b>ONE</b> (ulang satu lagu).</td></tr>
+      <tr><td>⚡ Kecepatan</td><td>0.5x sampai 2.0x. Berguna untuk rekaman kajian, kuliah, atau podcast.</td></tr>
+    </table>
+  </div>
+
+  <div class="tool">
+    <h3><span class="ic">⏾</span> Sleep Timer</h3>
+    <p class="what">Musik berhenti sendiri, cocok untuk mendengarkan sebelum tidur.</p>
+    <ol>
+      <li>Tekan <b>⏾ Sleep Timer</b>.</li>
+      <li>Pilih <b>15 menit</b> sampai <b>1,5 jam</b>, atau <b>Setelah lagu ini</b>.</li>
+      <li>Sisa waktunya tampil di tombol tersebut. Untuk membatalkan, pilih lagi <b>⏾ Sleep Timer</b>.</li>
+    </ol>
+    <div class="tip">Pilihan <b>Setelah lagu ini</b> tidak berlaku untuk radio, karena siaran radio tidak punya akhir. Untuk radio, pakai pilihan menit.</div>
+  </div>
+
+  <div class="tool">
+    <h3><span class="ic">🔒</span> Kontrol di layar kunci</h3>
+    <p class="what">Saat lagu diputar, judul lagu dan tombol <b>Play/Pause</b>, <b>Prev</b>, serta <b>Next</b> muncul di layar kunci HP dan di panel notifikasi. Kamu bisa mengganti lagu tanpa membuka aplikasi. Tombol media di headset Bluetooth juga ikut berfungsi.</p>
+  </div>
+
+  <div class="tool">
+    <h3><span class="ic">⌨️</span> Pintasan keyboard (laptop)</h3>
+    <table class="opt">
+      <tr><td><span class="k">Spasi</span></td><td>Putar / jeda</td></tr>
+      <tr><td><span class="k">←</span> <span class="k">→</span></td><td>Mundur / maju 5 detik</td></tr>
+      <tr><td><span class="k">Shift</span> + <span class="k">←</span> <span class="k">→</span></td><td>Lagu sebelumnya / berikutnya</td></tr>
+      <tr><td><span class="k">↑</span> <span class="k">↓</span></td><td>Volume naik / turun</td></tr>
+      <tr><td><span class="k">M</span></td><td>Bisukan / suarakan</td></tr>
+    </table>
+  </div>
+</section>
+
+<!-- ===== PLAYLIST ===== -->
+<section class="page">
+  <div class="kicker">Bagian 3</div>
+  <h2>Playlist</h2>
+  <div class="rule"></div>
+  <p>Kamu bisa punya banyak playlist, misalnya "Lagu Santai", "Olahraga", atau "Kajian". Setiap playlist menyimpan daftar lagunya sendiri.</p>
+
+  <div class="tool">
+    <h3><span class="ic">🗂️</span> Bilah playlist</h3>
+    <table class="opt">
+      <tr><td>Pilih playlist</td><td>Ketuk nama playlist untuk berpindah ke playlist lain.</td></tr>
+      <tr><td>＋ Baru</td><td>Membuat playlist kosong dengan nama yang kamu tentukan.</td></tr>
+      <tr><td>✏️</td><td>Mengganti nama playlist yang sedang dibuka.</td></tr>
+      <tr><td>🗑</td><td>Menghapus playlist beserta semua lagu di dalamnya. Tidak bisa dibatalkan.</td></tr>
+      <tr><td>🔗 Bagikan</td><td>Membuat link playlist untuk dikirim ke teman (lihat Bagian 4).</td></tr>
+    </table>
+  </div>
+
+  <div class="tool">
+    <h3><span class="ic">⋮</span> Menu setiap lagu</h3>
+    <p class="what">Tekan tombol <b>⋮</b> di samping judul lagu untuk membuka pilihan berikut:</p>
+    <table class="opt">
+      <tr><td>✏️ Ganti judul</td><td>Mengubah judul yang tampil di daftar.</td></tr>
+      <tr><td>Salin ke playlist</td><td>Menyalin lagu ke playlist lain, atau ke <b>＋ Playlist baru…</b></td></tr>
+      <tr><td>☁️ Upload ke Drive</td><td>Khusus lagu bertanda HP: meng-upload lagu ke Google Drive milikmu.</td></tr>
+      <tr><td>🔁 Ganti link Drive</td><td>Khusus lagu bertanda HP: mengganti lagu dengan link Google Drive yang sudah kamu punya.</td></tr>
+    </table>
+    <p style="margin-top:6px">Tombol <b>✕</b> di ujung kanan menghapus lagu dari daftar.</p>
+  </div>
+
+  <div class="tool">
+    <h3><span class="ic">🔍</span> Cari &amp; rapikan</h3>
+    <ul>
+      <li>Ketik di kotak <b>Cari judul lagu atau video…</b> untuk menyaring daftar.</li>
+      <li><b>Kosongkan Daftar</b> menghapus semua lagu di playlist yang sedang dibuka. Playlist lain tidak ikut terhapus.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ===== BERBAGI ===== -->
+<section class="page">
+  <div class="kicker">Bagian 4</div>
+  <h2>Berbagi playlist</h2>
+  <div class="rule"></div>
+  <p>Kirim playlist ke teman lewat WhatsApp atau media sosial. Temanmu cukup membuka link-nya, tanpa perlu daftar apa pun.</p>
+
+  <div class="tool">
+    <h3><span class="ic">🔗</span> Membagikan link</h3>
+    <ol>
+      <li>Buka playlist yang ingin dibagikan, lalu tekan <b>🔗 Bagikan</b>.</li>
+      <li>Pilih aplikasi tujuan (WhatsApp, Telegram, dan lain-lain). Di laptop, link langsung tersalin, jadi tinggal ditempel.</li>
+    </ol>
+    <h3>Yang diterima temanmu</h3>
+    <ol>
+      <li>Temanmu membuka link, lalu muncul kotak berisi nama playlist dan jumlah lagunya.</li>
+      <li>Tekan <b>💾 Simpan &amp; putar</b>. Playlist tersimpan di aplikasinya dan langsung diputar. Pilih <b>Abaikan</b> bila tidak jadi.</li>
+    </ol>
+    <div class="tip">Lagu YouTube, Google Drive, dan radio langsung ikut. Lagu bertanda <span class="badge">HP</span> tidak ikut, karena file-nya hanya ada di perangkatmu.</div>
+  </div>
+
+  <div class="tool">
+    <h3><span class="ic">☁️</span> Supaya lagu dari HP ikut terbagikan</h3>
+    <p class="what">Aplikasi bisa meng-upload lagu bertanda HP ke <b>Google Drive milikmu sendiri</b>, lalu mengatur foldernya agar bisa didengar siapa saja yang punya link.</p>
+    <ol class="steps">
+      <li>Tekan <b>🔗 Bagikan</b>. Kalau ada lagu dari HP, muncul panel <b>☁️ Upload lagu dari HP ke Google Drive</b>.</li>
+      <li>Centang lagu yang ingin di-upload.</li>
+      <li>Pilih <b>➕ Upload ke folder baru</b> (nama folder bisa diubah), atau <b>📁 Pilih folder yang ada</b> di Drive-mu.</li>
+      <li>Masuk dengan akun Google, lalu tekan <b>Izinkan</b>. Ini hanya diminta sekali selama aplikasi terbuka.</li>
+      <li>Tunggu sampai semua lagu bertanda ✅, lalu tekan <b>🔗 Bagikan sekarang</b>.</li>
+    </ol>
+    <table class="opt">
+      <tr><td>Tanpa upload</td><td>Tekan <b>Bagikan tanpa lagu HP</b> untuk membagikan lagu yang sudah online saja.</td></tr>
+      <tr><td>Satu lagu saja</td><td>Pakai menu <b>⋮ → ☁️ Upload ke Google Drive saya</b>.</td></tr>
+      <tr><td>Kuota</td><td>Lagu memakai ruang Google Drive milikmu (gratis 15 GB).</td></tr>
+    </table>
+    <div class="tip"><b>Aman:</b> aplikasi hanya bisa membuka file dan folder yang dibuatnya sendiri atau yang kamu pilih. File lain di Drive-mu tidak bisa dilihat. Izin bisa dicabut kapan saja di <a href="https://myaccount.google.com/permissions">myaccount.google.com/permissions</a>.</div>
+    <div class="tip warn"><b>Perhatikan hak cipta.</b> Bagikan hanya lagu yang memang boleh kamu bagikan.</div>
+  </div>
+</section>
+
+<!-- ===== LAINNYA ===== -->
+<section class="page">
+  <div class="kicker">Bagian 5</div>
+  <h2>Pasang aplikasi</h2>
+  <div class="rule"></div>
+  <p>Amajing Player bisa dipasang seperti aplikasi biasa. Ikonnya muncul di layar utama dan aplikasinya terbuka di jendela sendiri tanpa bilah alamat.</p>
+  <div class="grid">
+    <div class="card"><h3>Android</h3>Buka di <b>Chrome</b>, tekan menu <b>⋮</b> di kanan atas, lalu pilih <b>Instal aplikasi</b> (atau <b>Tambahkan ke layar utama</b> → <b>Instal</b>).</div>
+    <div class="card"><h3>iPhone / iPad</h3>Buka di <b>Safari</b>, tekan tombol <b>Bagikan</b> (kotak dengan panah ke atas), lalu pilih <b>Tambah ke Layar Utama</b>.</div>
+    <div class="card"><h3>Laptop (Chrome / Edge)</h3>Tekan ikon instal di ujung kanan bilah alamat, lalu pilih <b>Instal</b>.</div>
+    <div class="card"><h3>Hanya muncul "pintasan"?</h3>Update Chrome ke versi terbaru lewat Play Store, lalu coba lagi.</div>
+  </div>
+
+  <div class="kicker" style="margin-top:22px">Tanya jawab</div>
+  <h2>Kalau ada kendala</h2>
+  <div class="rule"></div>
+
+  <h3>Lagu dari HP hilang dari daftar</h3>
+  <p>Lagu tersimpan di penyimpanan browser. Kalau data situs atau riwayat browser dihapus, lagunya ikut terhapus dan perlu ditambahkan lagi.</p>
+
+  <h3>Lagu Google Drive tidak mau diputar</h3>
+  <p>Pastikan file dibagikan ke <b>"Siapa saja yang memiliki link"</b> dan ukurannya di bawah sekitar 100 MB. Coba juga putar ulang saat sinyal internet lebih stabil.</p>
+
+  <h3>Musik berhenti saat layar HP mati</h3>
+  <p>Beberapa HP menghemat baterai dengan menutup aplikasi di latar belakang. Pasang Amajing Player sebagai aplikasi, lalu di pengaturan baterai HP pilih <b>Tidak dibatasi</b> untuk Chrome.</p>
+
+  <h3>Radio tidak bersuara</h3>
+  <p>Stasiun mungkin sedang tidak siaran. Coba stasiun lain, atau cari dengan nama yang berbeda.</p>
+
+  <h3>Punya saran atau menemukan kesalahan?</h3>
+  <p>Tekan <b>💬 Kirim masukan</b> di bagian bawah aplikasi. Setiap masukan dibaca.</p>
+
+  <div class="end">
+    <img src="../brand/logo.svg" alt="Amajing Labs">
+    <p><a class="dlbig" href="Panduan-Amajing-Player.pdf" download>⬇ Unduh panduan (PDF)</a></p>
+    <p>Suka dengan aplikasi ini? Dukung pengembangannya lewat <b>☕ Traktir kopi</b> di <a href="https://saweria.co/amajinglabs">saweria.co/amajinglabs</a></p>
+  </div>
+</section>
+
+</main>
+<p class="sitefoot">© Amajing Labs · <a href="../">Buka Amajing Player</a> · <a href="../privasi.html">Privasi</a></p>
+</body>
+</html>
