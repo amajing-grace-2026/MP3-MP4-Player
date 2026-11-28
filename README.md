@@ -1,2 +1,3 @@
-# MP3-MP4-Player
-Pemutar Mp3 / Mp4 Gratis
+# Amajing Player
+
+Pemutar musik dan video. Oleh Amajing Labs.

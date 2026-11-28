@@ -1,4 +1,4 @@
-const CACHE_NAME = 'media-player-v17';
+const CACHE_NAME = 'media-player-v18';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
